@@ -22,6 +22,17 @@
 
 ## Current phase
 
-**S0.5 — Claude Code Foundation & Storefront Skills.** No Next.js app, no
-`package.json`, no dependencies, no database migrations yet. S1 scaffolds the Next.js
-project.
+**S1 — Next.js Foundation — complete.** The repo now holds a production-oriented
+Next.js 16 (App Router, Turbopack) + React 19 + TypeScript strict + Tailwind v4 project,
+managed with Yarn 1. It contains only the technical foundation: root layout, a
+placeholder home page, `not-found` / `error` / `robots`, a `/api/health` route,
+Zod-validated public env (`src/lib/env.ts`), a request-scoped anon Supabase server
+client (`src/lib/supabase/server.ts`), and a Vitest + React Testing Library test
+foundation. **No catalog/cart/checkout/order feature, no final visual design, no design
+tokens.** See the storefront `README.md` for setup and scripts.
+
+**Next: S2.1 — Information Architecture & User Flows** (not started). No storefront UI,
+color palette, typography scale, or component visual design until the S2.4 DESIGN
+APPROVED gate.
+
+Zero database migrations to date; zero changes to the admin repo.

@@ -1,14 +1,31 @@
 ---
 name: testing-nextjs-storefront
-description: Future testing principles for the storefront — unit (helpers/validation/formatting), component (ProductCard, cart, checkout forms), integration (public catalog RPCs, create_storefront_order, idempotency, stock, price recompute), E2E (browse→cart→checkout→success), security (public cannot read private data), concurrency (scarce stock, duplicate checkout). Tests never hit production Supabase. Tooling is added in S1/S13, not now.
+description: Testing principles and the S1 test foundation for the storefront — unit (helpers/validation/formatting), component (ProductCard, cart, checkout forms), integration (public catalog RPCs, create_storefront_order, idempotency, stock, price recompute), E2E (browse→cart→checkout→success), security (public cannot read private data), concurrency (scarce stock, duplicate checkout). Tests never hit production Supabase.
 ---
 
 # Testing (Next.js storefront)
 
 ## Apply when
-Planning test coverage for a phase, or adding tests once the runner exists. **Do not
-install testing tools in S0.5.** The runner + RTL foundation is set up in S1; deeper
-layers (integration/E2E/security/concurrency) in later phases per the roadmap.
+Planning test coverage for a phase, or adding/changing tests.
+
+## S1 foundation (in place)
+
+- **Runner:** Vitest (`yarn test` = `vitest run`, `yarn test:watch`). Config in
+  `vitest.config.mts` — kept separate from `next.config.ts`.
+- **Env:** jsdom; `globals: false` (import `describe/it/expect/vi` explicitly);
+  `setupFiles: ['./src/test/setup.ts']` (jest-dom matchers + RTL `cleanup`).
+- **Fake env:** `test.env` in the config supplies obviously-fake `NEXT_PUBLIC_*`
+  values so a stray import of `@/lib/env` (which validates at load) never fails on
+  load. No real credential, ever.
+- **Isolation:** `clearMocks` + `restoreMocks` (not `mockReset`). `@/` alias mirrors
+  `tsconfig`.
+- **Convention:** colocated `thing.ts → thing.test.ts`, `Thing.tsx → Thing.test.tsx`;
+  shared helpers in `src/test/`. Select by role/label/text, not `data-testid`.
+- **Not yet installed** (add in the phase that needs them): Playwright / any E2E
+  runner, MSW, coverage tooling, a disposable-DB integration harness.
+
+Deeper layers (integration / RPC / RLS / concurrency / E2E) arrive in later phases per
+the roadmap; the principles below define them.
 
 ## Principles
 

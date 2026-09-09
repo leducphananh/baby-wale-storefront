@@ -38,15 +38,38 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S0.5
+## 2. Current phase — S1 complete; next is S2.1 (NOT started)
 
-S0.5 = **Claude Code foundation & storefront skills only.** No application yet.
+- **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
+- **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
+- **S1** — Next.js foundation — **done.** A production-oriented Next.js App Router
+  project now exists: root layout + placeholder home, `not-found` / `error` / `robots`,
+  `/api/health`, Zod-validated env, request-scoped anon Supabase server client, Vitest +
+  RTL test foundation. **No business feature, no final visual design, no design tokens.**
+- **Next: S2.1** — Information Architecture & User Flows. **Not started.** Do not begin
+  S2 work (IA, moodboard, hi-fi design, tokens) until asked.
 
-Do **not**, in S0.5: run `create-next-app`; create `package.json`, `next.config.*`,
-`tsconfig.*`, `app/`, `src/`; install any npm package; run `shadcn init`; apply any
-database migration; modify the admin repo; start S1.
+The **S2.4 DESIGN APPROVED gate** (§11) still stands: no final storefront UI, colors,
+typography scale, radius/shadow language, `ProductCard`, `Header`, or `Footer` design
+before it.
 
-A repo with no `package.json` is the **expected** state at the end of S0.5.
+### Stack & commands (as of S1)
+
+- Next.js **16.3.4** (App Router, Turbopack), React **19.2.8**, TypeScript **5** strict,
+  Tailwind CSS **v4** (CSS-config), ESLint **9** (`eslint-config-next`).
+- Package manager: **Yarn 1.22.22** (`yarn.lock`). Do not add a second lockfile.
+- Node **>= 20.9** (developed on 22.17).
+- Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
+  and (later) validation. **No `service_role`, no TanStack Query, no Zustand, no RHF,
+  no shadcn yet** — added in the phase that first needs them.
+- Scripts: `yarn dev` · `yarn build` · `yarn start` · `yarn lint` · `yarn typecheck`
+  (`tsc --noEmit`) · `yarn test` (`vitest run`) · `yarn test:watch`.
+- Key paths: `src/app/` (routes), `src/lib/env.ts` (validated public env),
+  `src/lib/supabase/server.ts` (server anon client), `src/test/` (test setup),
+  `vitest.config.mts`. Env: `.env.example` (committed placeholders), `.env.local`
+  (gitignored). Feature folders (`src/features/*`) appear when features are built.
+- Run `yarn lint && yarn typecheck && yarn test && yarn build` at the end of every
+  phase (§12).
 
 ---
 
