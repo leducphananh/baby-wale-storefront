@@ -38,16 +38,21 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S1 complete; next is S2.1 (NOT started)
+## 2. Current phase — S2.1 complete; next is S2.2 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
-- **S1** — Next.js foundation — **done.** A production-oriented Next.js App Router
-  project now exists: root layout + placeholder home, `not-found` / `error` / `robots`,
-  `/api/health`, Zod-validated env, request-scoped anon Supabase server client, Vitest +
-  RTL test foundation. **No business feature, no final visual design, no design tokens.**
-- **Next: S2.1** — Information Architecture & User Flows. **Not started.** Do not begin
-  S2 work (IA, moodboard, hi-fi design, tokens) until asked.
+- **S1** — Next.js foundation — done. Root layout + placeholder home, `not-found` /
+  `error` / `robots`, `/api/health`, Zod-validated env, request-scoped anon Supabase
+  server client, Vitest + RTL. No business feature, no visual design, no design tokens.
+- **S2.1** — Information Architecture & User Flows — **done**
+  (`docs/design/S2.1-information-architecture-and-user-flows.md`): IA tree, page
+  inventory, navigation decision, discovery/cart/checkout/tracking flows, price/stock
+  recovery flows, error-state inventory, per-flow accessibility, conceptual component +
+  state inventory, owner decisions, S2.2 brief. **Documentation only — no code, no
+  visual design.**
+- **Next: S2.2** — Visual Direction & Moodboard. **Not started.** Do not begin S2.2+
+  work (moodboard, visual direction, hi-fi design, tokens) until asked.
 
 The **S2.4 DESIGN APPROVED gate** (§11) still stands: no final storefront UI, colors,
 typography scale, radius/shadow language, `ProductCard`, `Header`, or `Footer` design
