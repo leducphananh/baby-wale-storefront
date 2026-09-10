@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S2.2 complete; next is S2.3 (NOT started)
+## 2. Current phase — S2.3 complete; next is S2.4 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -58,8 +58,18 @@ conflict, resolve per §3.
   shape/elevation, photography, and every screen; anti-pattern list; structured
   moodboard; S2.3 brief. **Documentation only — no code, no final tokens, no Figma
   screens.**
-- **Next: S2.3** — High-Fidelity Figma Design. **Not started.** Do not begin S2.3+ work
-  (hi-fi screens, final tokens) until asked.
+- **S2.3** — High-Fidelity Design — **done**
+  (`docs/design/S2.3-high-fidelity-figma-design.md` + a Claude Design canvas:
+  `claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640`): build-ready hi-fi
+  spec — **exploratory** token proposal (candidate hex, Be Vietnam Pro ramp,
+  spacing/radius/elevation, grid), ~30 components with states, per-screen layouts
+  (mobile 390 / desktop 1440), completeness matrix, S2.4 handoff (14 checks). Figma
+  itself was not usable (connected account is a Starter/View seat). **No production
+  code, no dependencies, no DB, no final tokens.**
+- **Next: S2.4** — Design System & Design Approval. **Not started.** S2.4 audits the
+  token proposal, verifies contrast with the real brand colours, **freezes** the design
+  system, and produces the **DESIGN APPROVED** artifact. Do not begin S2.4+ work (token
+  freeze, UI build) until asked.
 
 The **S2.4 DESIGN APPROVED gate** (§11) still stands: no final storefront UI, colors,
 typography scale, radius/shadow language, `ProductCard`, `Header`, or `Footer` design
