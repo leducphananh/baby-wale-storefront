@@ -38,21 +38,28 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S2.1 complete; next is S2.2 (NOT started)
+## 2. Current phase — S2.2 complete; next is S2.3 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
 - **S1** — Next.js foundation — done. Root layout + placeholder home, `not-found` /
   `error` / `robots`, `/api/health`, Zod-validated env, request-scoped anon Supabase
   server client, Vitest + RTL. No business feature, no visual design, no design tokens.
-- **S2.1** — Information Architecture & User Flows — **done**
+- **S2.1** — Information Architecture & User Flows — done
   (`docs/design/S2.1-information-architecture-and-user-flows.md`): IA tree, page
-  inventory, navigation decision, discovery/cart/checkout/tracking flows, price/stock
-  recovery flows, error-state inventory, per-flow accessibility, conceptual component +
-  state inventory, owner decisions, S2.2 brief. **Documentation only — no code, no
-  visual design.**
-- **Next: S2.2** — Visual Direction & Moodboard. **Not started.** Do not begin S2.2+
-  work (moodboard, visual direction, hi-fi design, tokens) until asked.
+  inventory, navigation decision, all customer flows, price/stock recovery, error-state
+  inventory, accessibility, conceptual component + state inventory. Includes the
+  2026-09-10 approved refinements (two-tier sticky model; success-page save/share
+  action; tracking accepts a token or pasted URL; **D1–D3 locked**, D4 open).
+- **S2.2** — Visual Direction & Moodboard — **done**
+  (`docs/design/S2.2-visual-direction-and-moodboard.md`): three visual directions, a
+  comparison matrix, and a recommendation of **"Soft Trust Commerce"**; visual doctrine;
+  direction (not tokens) for color roles, typography (keep Be Vietnam Pro),
+  shape/elevation, photography, and every screen; anti-pattern list; structured
+  moodboard; S2.3 brief. **Documentation only — no code, no final tokens, no Figma
+  screens.**
+- **Next: S2.3** — High-Fidelity Figma Design. **Not started.** Do not begin S2.3+ work
+  (hi-fi screens, final tokens) until asked.
 
 The **S2.4 DESIGN APPROVED gate** (§11) still stands: no final storefront UI, colors,
 typography scale, radius/shadow language, `ProductCard`, `Header`, or `Footer` design
