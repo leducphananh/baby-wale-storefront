@@ -7,7 +7,7 @@
 | [`../.claude/skills/`](../.claude/skills/) | Focused, topic-specific rules loaded per task (Next.js App Router / RSC / data access / caching, public data contract, Supabase, checkout, cart, SEO, images, performance, security, design system, Figma-to-code, visual consistency, accessibility, forms, error handling, testing, Vietnamese commerce, domain, TypeScript, clean code, code review). |
 | [`design/S2.1-information-architecture-and-user-flows.md`](design/S2.1-information-architecture-and-user-flows.md) | **S2.1 output.** Storefront IA tree, page inventory, navigation decision (header + hamburger; search & cart in the header), discovery/cart/checkout/tracking flows, price- and stock-change recovery, edge/error-state inventory, per-flow accessibility requirements, conceptual component + behavioral-state inventory, owner decisions, and the S2.2 design brief. IA + flows only — no visual design. Includes the 2026-09-10 approved refinements (two-tier sticky model; success-page save/share action; tracking accepts a token or pasted URL; D1–D3 locked). |
 | [`design/S2.2-visual-direction-and-moodboard.md`](design/S2.2-visual-direction-and-moodboard.md) | **S2.2 output.** Three visual directions (Soft Trust Commerce / Playful Modern Family / Premium Calm Baby), a comparison matrix, and a recommendation of **Soft Trust Commerce**; the visual doctrine; direction (not tokens) for color roles, typography, shape/elevation, photography, `ProductCard`, Product Detail, header/search, cart, checkout, success/tracking, trust system, icons/illustration, motion, mobile, accessibility; an anti-pattern list; a structured moodboard; and the S2.3 high-fidelity design brief. Direction only — **no final tokens, no Figma screens** (S2.4 owns tokens). |
-| [`design/S2.3-high-fidelity-figma-design.md`](design/S2.3-high-fidelity-figma-design.md) | **S2.3 output.** A build-ready high-fidelity design spec for Soft Trust Commerce: an **exploratory token proposal** (candidate hex, Be Vietnam Pro type ramp, spacing/radius/elevation, container/grid — all "PROPOSED, S2.4 to approve"), full **component anatomy + states** (~30 components), **per-screen layouts** (mobile 390 / desktop 1440) with measurements + text wireframes, responsive rules, accessibility decisions, a completeness matrix, a content-placeholder register, and the S2.4 handoff (14 verification questions). Figma was **not usable** this phase — the connected Figma account is a Starter/**View** seat (20 calls/month, no edit) — so the visual deliverable is a **Claude Design canvas**: [Baby Wale Storefront — Hi-Fi](https://claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640) (north-star mobile + desktop Product Detail, Home, Catalog, Cart price-changed, Checkout, Success COD, a component/state sheet, a token board). **No production code, no dependencies, no DB, no final tokens.** |
+| [`design/S2.3-high-fidelity-figma-design.md`](design/S2.3-high-fidelity-figma-design.md) | **S2.3 output + S2.3R corrections (§13–§14).** A build-ready high-fidelity design spec for Soft Trust Commerce: an **exploratory token proposal** (candidate hex, Be Vietnam Pro type ramp, spacing/radius/elevation, container/grid — all "PROPOSED, S2.4 to approve"), full **component anatomy + states** (~30 components), **per-screen layouts** (mobile 390 / desktop 1440), responsive + accessibility decisions, a 4-tier screen-completeness matrix, a content-placeholder register, and the S2.4 handoff. Figma was **not usable** (connected account is a Starter/**View** seat), so the visual deliverable is a **Claude Design canvas (v3)**: [Baby Wale Storefront — Hi-Fi](https://claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640). **S2.3R** rendered all 9 artboards with headless Chrome and fixed: the unsupported "chính hãng" hero claim (→ neutral mock copy), the cart-badge contrast (→ Trust Blue, ≥4.5:1 rule), two clipped artboards, and a stretched quantity stepper; it also recorded the 360px stress result and the owner-review questions (R1–R7). **No production code, no dependencies, no DB, no final tokens.** |
 
 ## Corrections to S0 recorded in CLAUDE.md and the skills
 
@@ -25,19 +25,28 @@
 
 ## Current phase
 
-**S2.3 — High-Fidelity Design — complete.**
+**S2.3 — High-Fidelity Design — complete, incl. the S2.3R Visual Review & Corrections
+pass.**
 [`design/S2.3-high-fidelity-figma-design.md`](design/S2.3-high-fidelity-figma-design.md)
 turns the approved **Soft Trust Commerce** direction into a build-ready high-fidelity
 spec: an **exploratory token proposal** (candidate hex, Be Vietnam Pro type ramp,
 spacing / radius / elevation, container / grid — all "PROPOSED, S2.4 to approve"), full
-component anatomy + states, per-screen layouts (mobile 390 / desktop 1440) with
-measurements, responsive + accessibility decisions, a completeness matrix, a
-content-placeholder register, and the S2.4 handoff. **Figma was not usable** (the
-connected account is a Starter / **View** seat — 20 MCP calls/month, no edit), so the
-visual deliverable is a **Claude Design canvas**:
-[Baby Wale Storefront — Hi-Fi](https://claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640)
-— the north-star mobile + desktop Product Detail, Home, Catalog, Cart (price-changed),
-Checkout, Success (COD), a component / state sheet, and a token board.
+component anatomy + states, per-screen layouts (mobile 390 / desktop 1440), responsive +
+accessibility decisions, a 4-tier screen-completeness matrix, a content-placeholder
+register, and the S2.4 handoff. **Figma was not usable** (the connected account is a
+Starter / **View** seat — 20 MCP calls/month, no edit), so the visual deliverable is a
+**Claude Design canvas (v3)**:
+[Baby Wale Storefront — Hi-Fi](https://claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640).
+
+**S2.3R** rendered all 9 artboards with **headless Chrome** (pre-installed; no new
+dependency) and pixel-inspected them, then fixed four verified issues: the unsupported
+**"chính hãng"** hero claim (→ neutral mock copy; no replacement claim), the **cart-badge
+contrast** (pink ~4.0:1 → **Trust Blue ~5.9:1**, plus a **≥4.5:1** rule for any
+text/numeral badge), two **clipped artboards**, and a **stretched quantity stepper**. It
+also documented the **360px** stress result (fluid gutter/gap tuning proposal — no
+system change), a real-image validation gap (no product photos available → the 1:1
+frame stays a **proposal** for S2.4 to validate), and the owner-review questions
+(R1–R7). 10 rendered PNGs were sent to the owner for review.
 
 **Documentation + design canvas only** — zero production code, dependencies, or database
 changes; **no final tokens** (S2.4 freezes them); the S1 foundation is untouched.

@@ -58,14 +58,18 @@ conflict, resolve per §3.
   shape/elevation, photography, and every screen; anti-pattern list; structured
   moodboard; S2.3 brief. **Documentation only — no code, no final tokens, no Figma
   screens.**
-- **S2.3** — High-Fidelity Design — **done**
-  (`docs/design/S2.3-high-fidelity-figma-design.md` + a Claude Design canvas:
+- **S2.3** (incl. the **S2.3R** review/correction pass) — High-Fidelity Design — **done**
+  (`docs/design/S2.3-high-fidelity-figma-design.md` + a Claude Design canvas **v3**:
   `claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640`): build-ready hi-fi
   spec — **exploratory** token proposal (candidate hex, Be Vietnam Pro ramp,
   spacing/radius/elevation, grid), ~30 components with states, per-screen layouts
-  (mobile 390 / desktop 1440), completeness matrix, S2.4 handoff (14 checks). Figma
-  itself was not usable (connected account is a Starter/View seat). **No production
-  code, no dependencies, no DB, no final tokens.**
+  (mobile 390 / desktop 1440), 4-tier completeness matrix, S2.4 handoff. Figma itself
+  was not usable (connected account is a Starter/View seat). **S2.3R** pixel-inspected
+  all 9 canvas artboards (headless Chrome, pre-installed) and fixed: unsupported
+  "chính hãng" hero claim (→ mock copy), cart-badge contrast (→ Trust Blue, ≥4.5:1
+  rule), 2 clipped artboards, 1 stretched control; recorded the 360px result and that
+  the 1:1 image frame is unvalidated (no real photos). **No production code, no
+  dependencies, no DB, no final tokens. DESIGN APPROVED remains OPEN.**
 - **Next: S2.4** — Design System & Design Approval. **Not started.** S2.4 audits the
   token proposal, verifies contrast with the real brand colours, **freezes** the design
   system, and produces the **DESIGN APPROVED** artifact. Do not begin S2.4+ work (token
