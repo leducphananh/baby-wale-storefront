@@ -1,37 +1,114 @@
 @import "tailwindcss";
 
 /*
- * S1 foundation styles — deliberately neutral.
+ * Tailwind v4's automatic class scanner reads every text file in the repo by
+ * default, including markdown. `docs/` and `.claude/skills/` intentionally
+ * quote anti-pattern examples like `bg-[#2563B0]` and `p-[13px]` (the exact
+ * things NOT to do) — without this, the scanner compiles those quoted
+ * examples into real, unused utility classes in the production CSS. Exclude
+ * documentation from source detection; only application code should be
+ * scanned.
+ */
+@source not "../../docs";
+@source not "../../.claude";
+
+/*
+ * Baby Wale Storefront — Design System V1 (S2.5 implementation).
  *
- * The final Baby Wale design tokens (color palette, typography scale, radius,
- * shadow language) are defined at S2.4 Design Approval. Nothing here is a brand
- * token; these are just readable, accessible defaults so foundation pages
- * render sanely. See design-system, storefront-ui-design.
+ * DESIGN APPROVED — BABY WALE STOREFRONT V1
+ * (docs/design/S2.4-design-system-and-approval.md, "the S2.4 doc").
+ *
+ * This file is the ONLY place design tokens are declared. Every value below is
+ * copied verbatim from the S2.4 doc — nothing here is invented, approximated,
+ * or "improved." Do not add a token, a colour, a radius, or a font size here
+ * without it existing in the S2.4 doc, and do not use a raw hex/px value in a
+ * component when a token below already covers it (design-system,
+ * storefront-ui-design). Any change to a value in this file is a design-system
+ * change and requires a Design Deviation Proposal (S2.4 §19) first.
+ *
+ * LIGHT-ONLY MVP (S2.4 §16): there is no dark theme. The `create-next-app`
+ * `prefers-color-scheme: dark` scaffold block from S1 is intentionally removed.
  */
 
-:root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-}
+@theme {
+  /* ---- Colour tokens — S2.4 §4 (exact hex, do not adjust) ------------- */
+  --color-bg: #fbfaf8;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f4f2ee;
+  --color-text: #1f2a37;
+  --color-text-muted: #5b6673;
+  --color-border: #e7e3dc;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  --color-primary: #2563b0;
+  --color-primary-hover: #1e4e8c;
+  --color-primary-pressed: #173f71;
+  --color-primary-tint: #eaf2fb;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-accent: #d64c7c;
+  --color-accent-tint: #fceef3;
+  --color-accent-text: #7a1f3d;
+
+  --color-success: #177a4e;
+  --color-success-bg: #e7f4ee;
+  --color-warning: #8a560a;
+  --color-warning-bg: #fbf1e1;
+  --color-danger: #b02e2e;
+  --color-danger-bg: #fbecec;
+
+  --color-focus: #1d6fe0;
+
+  /* ---- Radius — S2.4 §7.1 (one scale, no pills, no exceptions) -------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  /* ---- Elevation — S2.4 §7.2 (one shadow language) --------------------
+   * `flat` is the ProductCard/default resting state — no shadow, so there is
+   * no `shadow-flat` utility to apply; simply omit a shadow class.
+   */
+  --shadow-raise: 0 1px 2px rgba(31, 42, 55, 0.06), 0 4px 12px rgba(31, 42, 55, 0.06);
+  --shadow-overlay: 0 8px 24px rgba(31, 42, 55, 0.1);
+
+  /* ---- Typography family — Be Vietnam Pro (S2.4 §5, unchanged from S1) */
   --font-sans:
     var(--font-be-vietnam), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* ---- Desktop content container — S2.4 §9.1 --------------------------
+   * 1200px, NOT the 1440px canvas artboard frame. Generates `max-w-content`.
+   */
+  --container-content: 1200px;
+
+  /*
+   * Spacing (S2.4 §6): the frozen base scale — 2, 4, 8, 12, 16, 20, 24, 32,
+   * 40, 48, 64px — is Tailwind v4's *default* 4px spacing scale exactly
+   * (`--spacing: 0.25rem`, unmodified below). No override needed:
+   *   spacing 2  -> p-0.5   spacing 12 -> p-3   spacing 32 -> p-8
+   *   spacing 4  -> p-1     spacing 16 -> p-4   spacing 40 -> p-10
+   *   spacing 8  -> p-2     spacing 20 -> p-5   spacing 48 -> p-12
+   *                                              spacing 64 -> p-16
+   * Breakpoints (S2.4 §9.1): 768 / 1024 / 1280 are Tailwind's default
+   * md / lg / xl, unmodified. S2.4 defines no 768-below tier other than the
+   * <=374px "compact mobile" case, which is not a standard min-width
+   * breakpoint — see the `compact` custom variant below.
+   */
+}
+
+/*
+ * Compact-mobile variant (S2.4 §6): a MAX-width tier for very small phones,
+ * distinct from Tailwind's min-width breakpoint scale. Usage: `compact:gap-2.5`.
+ */
+@custom-variant compact (@media (max-width: 374px));
+
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -45,5 +122,140 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * Typography roles — S2.4 §5.
+ *
+ * Implemented as compound component classes rather than plain Tailwind
+ * `--text-*` theme tokens: each role bundles size + line-height + weight +
+ * letter-spacing + (for price roles) tabular numerals, and four roles change
+ * value at the desktop breakpoint (S2.4 §5's "Mobile" / "Desktop" columns).
+ * Tailwind v4's theme->utility generator pairs `--text-*` with line-height
+ * only, not weight or a breakpoint-conditional value, so a single utility
+ * class per role can't express the full frozen role. Encoding it here keeps
+ * one class == one role, with no way to apply the size without the weight.
+ *
+ * Every size/line-height/weight number below is copied from the S2.4 §5
+ * table — do not adjust without a Design Deviation Proposal.
+ * ---------------------------------------------------------------------------
+ */
+@layer components {
+  .text-display {
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 700;
+  }
+  .text-h1 {
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+  .text-h2 {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+  }
+  .text-h3 {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .text-body {
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+  .text-body-sm {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  .text-caption {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+  }
+  .text-product-card-name {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    /* Reserved 2-line clamp height (S2.4 §5, §10.1) — apply alongside
+       `line-clamp-2` at the call site; this class only sets the type. */
+  }
+  .text-product-pdp-name {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+  }
+  .text-price-lg {
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .text-price-card {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .text-price-total {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .text-button-role {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 600;
+  }
+  .text-label-role {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+  .text-input-role {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 400;
+  }
+
+  @media (min-width: 1024px) {
+    .text-display {
+      font-size: 40px;
+      line-height: 48px;
+    }
+    .text-h1 {
+      font-size: 28px;
+      line-height: 36px;
+    }
+    .text-product-pdp-name {
+      font-size: 24px;
+      line-height: 32px;
+    }
+    .text-price-lg {
+      font-size: 28px;
+      line-height: 34px;
+    }
+  }
+
+  /*
+   * Hit-area expansion (S2.4 §8): the 36px "small inline button" visual size
+   * is smaller than the frozen >=44x44 critical-touch-target minimum. `::after`
+   * is generated content of the SAME element, so pointer events inside its
+   * expanded box register as clicking the control itself — a standard,
+   * accessible hit-slop technique, not a second interactive element.
+   */
+  .sm-target {
+    position: relative;
+  }
+  .sm-target::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
   }
 }

@@ -36,7 +36,8 @@ different button, different spacing rhythm, different price formatting.
 7. **Header and footer are identical on every route** (server shell + small client
    cart island) — no page ships its own nav.
 8. **If two screens must differ**, that difference is a deliberate, approved design
-   decision recorded in Figma / with the user — not an implementation drift.
+   decision recorded in `docs/design/S2.4-design-system-and-approval.md` (or a dated
+   Design Deviation Proposal addendum, S2.4 §19) — not an implementation drift.
 
 ## Anti-patterns to reject in review
 

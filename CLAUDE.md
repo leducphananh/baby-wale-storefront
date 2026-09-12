@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S2.3 complete; next is S2.4 (NOT started)
+## 2. Current phase — S2.5 complete (Design System Implementation); next is S3 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -70,14 +70,44 @@ conflict, resolve per §3.
   rule), 2 clipped artboards, 1 stretched control; recorded the 360px result and that
   the 1:1 image frame is unvalidated (no real photos). **No production code, no
   dependencies, no DB, no final tokens. DESIGN APPROVED remains OPEN.**
-- **Next: S2.4** — Design System & Design Approval. **Not started.** S2.4 audits the
-  token proposal, verifies contrast with the real brand colours, **freezes** the design
-  system, and produces the **DESIGN APPROVED** artifact. Do not begin S2.4+ work (token
-  freeze, UI build) until asked.
+- **S2.4** — Design System & Design Approval — **done. DESIGN APPROVED V1.**
+  (`docs/design/S2.4-design-system-and-approval.md` — **the authoritative design
+  source of truth**, overriding S2.1–S2.3R wording where they conflict, §18 of that
+  doc): frozen colour tokens (with recalculated contrast — the pink cart-badge is
+  permanently rejected as text/numeral background, ≥4.5:1 rule codified), frozen Be
+  Vietnam Pro type ramp, frozen 4px-base spacing incl. a ≤374px compact-mobile
+  adaptation (2 columns preserved, no 1-column fallback), frozen radius/elevation,
+  frozen control sizing, frozen 2/3/4-column responsive grid + sticky model, frozen
+  `ProductCard` / `Header` / Product Detail / Cart / Checkout / Success-Tracking design
+  contracts, a frozen content-claim contract (removed the unapproved "Giao hàng toàn
+  quốc" claim — including from the canvas itself, now **v4**; "chính hãng" and a
+  return-window remain gated), the 1:1 product-image frame approved for V1 with a
+  mandatory pre-S4 real-image validation checkpoint, an
+  icon direction (Lucide + matched custom SVGs, not installed), a Tailwind v4/shadcn
+  S2.5 implementation mapping, and a Design-Change Governance process. **No production
+  code, no dependencies, no DB change.**
+- **S2.5** — Design System Implementation — **done**
+  (`docs/design/S2.5-design-system-implementation.md`): every S2.4 token implemented
+  in `src/app/globals.css` (Tailwind v4 `@theme` for colour/radius/shadow/container;
+  typography roles as `@layer components` classes; Tailwind's default spacing scale
+  already matches S2.4's; a custom `compact` variant for the ≤374px tier), the S1
+  scaffold dark-mode block removed (light-only), `lucide-react` installed, and a
+  shadcn-style primitive set hand-built on Radix + CVA in `src/components/ui`
+  (`Button`, `Input`, `Textarea`, `Label`, `FormField`, `RadioGroup`, `Badge`,
+  `Skeleton`, `Separator`, `Dialog`, `Sheet`) plus layout/site primitives in
+  `src/components/layout` and `src/components/site` (`Container`, `Stack`, `Grid`,
+  `SectionHeading`, `EmptyState`, `ErrorState`, `Header`, `CartIndicator`). No
+  `ProductCard`/`PaymentRow`/`CategoryTile` (commerce scope, S3+). **No Supabase
+  calls, no migrations, no RPC, no S3+ route/business logic.**
+- **Next: S3** — Public Catalog Data Contract. **Not started.** Do not begin S3+ work
+  until asked.
 
-The **S2.4 DESIGN APPROVED gate** (§11) still stands: no final storefront UI, colors,
-typography scale, radius/shadow language, `ProductCard`, `Header`, or `Footer` design
-before it.
+**The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
+Implementation must not casually change: primary colour, accent use, type scale, radius
+language, shadow language, container width, `ProductCard`, the header system, the
+checkout visual model, mobile navigation, or primary-CTA hierarchy (S2.4 §19). A real
+issue found during implementation is raised as a **Design Deviation Proposal** (S2.4
+§19), not a silent code fix.
 
 ### Stack & commands (as of S1)
 
@@ -86,14 +116,21 @@ before it.
 - Package manager: **Yarn 1.22.22** (`yarn.lock`). Do not add a second lockfile.
 - Node **>= 20.9** (developed on 22.17).
 - Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
-  and (later) validation. **No `service_role`, no TanStack Query, no Zustand, no RHF,
-  no shadcn yet** — added in the phase that first needs them.
+  and (later) validation. **No `service_role`, no TanStack Query, no Zustand, no
+  RHF yet** — added in the phase that first needs them.
+- Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
+  `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
+  `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
+  pattern (owned code, not an installed package) so the CLI can extend them later.
 - Scripts: `yarn dev` · `yarn build` · `yarn start` · `yarn lint` · `yarn typecheck`
   (`tsc --noEmit`) · `yarn test` (`vitest run`) · `yarn test:watch`.
-- Key paths: `src/app/` (routes), `src/lib/env.ts` (validated public env),
-  `src/lib/supabase/server.ts` (server anon client), `src/test/` (test setup),
-  `vitest.config.mts`. Env: `.env.example` (committed placeholders), `.env.local`
-  (gitignored). Feature folders (`src/features/*`) appear when features are built.
+- Key paths: `src/app/` (routes, incl. the design tokens in `globals.css`),
+  `src/lib/env.ts` (validated public env), `src/lib/supabase/server.ts` (server anon
+  client), `src/lib/utils.ts` (`cn()`), `src/components/ui/` (themed primitives),
+  `src/components/layout/` + `src/components/site/` (layout/header primitives),
+  `src/test/` (test setup), `vitest.config.mts`. Env: `.env.example` (committed
+  placeholders), `.env.local` (gitignored). Feature folders (`src/features/*`) appear
+  when features are built.
 - Run `yarn lint && yarn typecheck && yarn test && yarn build` at the end of every
   phase (§12).
 
@@ -302,19 +339,22 @@ Approved unless a future user instruction explicitly changes them.
 ## 11. Design roadmap [always]
 
 ```
-S0    Requirements & Architecture              (done — docs/S0-...md)
-S0.5  Claude Code Foundation & Storefront Skills   (current)
-S1    Next.js Foundation
+S0    Requirements & Architecture              ✅
+S0.5  Claude Code Foundation & Storefront Skills ✅
+S1    Next.js Foundation                       ✅
 
 S2    UX & Visual Design
-  S2.1  Information Architecture & User Flows
-  S2.2  Visual Direction & Moodboard
-  S2.3  High-Fidelity Figma Design
-  S2.4  Design System & Design Approval
+  S2.1  Information Architecture & User Flows  ✅
+  S2.2  Visual Direction & Moodboard            ✅
+  S2.3  High-Fidelity Design                    ✅
+  S2.3R Visual Review & Corrections             ✅
+  S2.4  Design System & Design Approval         ✅  DESIGN APPROVED V1
 
-════════════════  DESIGN APPROVED GATE  ════════════════
+════════════════  DESIGN APPROVED GATE — CLOSED  ════════════════
 
-S3    Public Catalog Data Contract
+S2.5  Design System Implementation (Tailwind v4 + shadcn-style UI primitives) ✅
+
+S3    Public Catalog Data Contract  ← next
 S4    Catalog Browse / Homepage
 S5    Product Detail
 S6    Shopping Cart
@@ -330,16 +370,19 @@ S13   SEO, Security, Testing & Production Hardening
 No feature UI implementation beyond project foundation begins before the **S2 design
 approval gate** where relevant.
 
-### Design approval gate
+### Design approval gate — CLOSED (frozen at S2.4)
 
-After **S2.4**, the approved design becomes a **visual contract**. Later
-implementation must not casually: change visual direction; invent a different
-typography system; introduce unrelated colors; change global radius/shadow language;
-redesign `ProductCard` independently; redesign checkout independently. **Changes to
-approved visual foundations require explicit user approval.**
+The approved design (`docs/design/S2.4-design-system-and-approval.md`) is now a
+**visual contract**. Implementation must not casually: change visual direction; invent
+a different typography system; introduce unrelated colors; change global radius/shadow
+language; redesign `ProductCard` independently; redesign checkout independently.
+**Changes to approved visual foundations require a Design Deviation Proposal (S2.4
+§19) and explicit user approval.**
 
-Do **not** invent final visual tokens (colors, spacing, radii) in S0.5 or S1 — S2.4
-defines them. Skills describe *how to follow* approved tokens later.
+Final visual tokens (colors, spacing, radii, type scale) are now **frozen in
+`docs/design/S2.4-design-system-and-approval.md`** — that document is authoritative
+over any earlier exploratory value in S2.1–S2.3R. Skills describe *how to follow* the
+approved tokens; they do not restate the token table.
 
 ---
 

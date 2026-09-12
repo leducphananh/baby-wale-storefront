@@ -1,23 +1,28 @@
 ---
 name: figma-to-code
-description: Turning an approved Figma design into code faithfully — inspect the real Figma, preserve hierarchy/typography/spacing/component states/image ratios/responsive behavior, reuse design tokens, never approximate layouts or invent arbitrary Tailwind values, never redesign an approved screen while implementing it. Applies from S2.4 onward.
+description: Turning the approved design evidence into code faithfully — inspect the real source (no editable Figma file exists; use S2.4 tokens + S2.3/S2.3R specs + the Claude Design canvas), preserve hierarchy/typography/spacing/component states/image ratios/responsive behavior, reuse design tokens, never approximate layouts or invent arbitrary Tailwind values, never redesign an approved screen while implementing it. Applies from S2.4 (DESIGN APPROVED) onward.
 ---
 
 # Figma-to-code
 
 ## Apply when
-Implementing any screen or component from a Figma design after S2.4 Design Approval.
+Implementing any screen or component against the approved design (S2.4 onward).
 
 ## Principle
 
-**An approved Figma design is a visual contract.** Implementation reproduces it; it
-does not reinterpret it.
+**The approved design is a visual contract.** Implementation reproduces it; it does not
+reinterpret it. **Source-of-truth order** (S2.4 §18): (1) `docs/design/S2.4-design-
+system-and-approval.md` — tokens + component contracts; (2) `docs/design/S2.3-
+high-fidelity-figma-design.md` (incl. S2.3R) — anatomy + screen specs; (3) the Claude
+Design canvas v3 — rendered visual evidence; (4) S2.2 doctrine; (5) S2.1 IA. **No
+editable Figma file exists** (the connected account is a Starter/View seat) — that is
+not a blocker; if one is built later it must implement this hierarchy, not redefine it.
 
 ## Rules
 
-1. **Inspect the actual Figma file** (frames, layers, auto-layout, constraints, the
-   variables/tokens panel) before writing code. Do not implement from a screenshot or
-   memory when the file is available.
+1. **Inspect the real source** — the S2.4 doc's frozen tokens/contracts, the S2.3/S2.3R
+   anatomy and screen specs, and the canvas's rendered artboards — before writing code.
+   Do not implement from memory or invent a layout the sources don't specify.
 2. **Preserve hierarchy** — the same visual and DOM order of identity, image, price,
    availability, CTA, supporting info.
 3. **Preserve typography** — map each text style to the design-system type token
@@ -35,8 +40,9 @@ does not reinterpret it.
    token. **Do not invent an arbitrary Tailwind value** (`p-[13px]`, `bg-[#eef]`) when
    a matching token exists; a genuine mismatch is a design question, not a workaround.
 9. **Do not redesign while implementing.** No "I'll improve this spacing / swap this
-   color / rearrange this section" during the build. Changes to an approved screen go
-   back to the user for approval (CLAUDE.md §11).
+   color / rearrange this section" during the build. A real problem is a **Design
+   Deviation Proposal** (S2.4 §19), not a silent change — it goes back to the user for
+   approval before any global rule changes.
 10. **Reuse approved shared components** (`Header`, `Footer`, `Container`,
     `ProductCard`, `Price`, `StockBadge`, `Button`, inputs) — don't re-create a
     one-off version to match a frame that was drawn with the shared component

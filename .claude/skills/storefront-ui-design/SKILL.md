@@ -1,18 +1,19 @@
 ---
 name: storefront-ui-design
-description: Baby Wale visual direction — cute, clean, warm, trustworthy, modern e-commerce. What to avoid (childish overload, gradient/pink excess, giant rounded cards, random shadows, AI-generic landing look). Brand cues to lean on. Final tokens are NOT set here — S2.4 Design Approval defines them.
+description: Baby Wale visual direction — cute, clean, warm, trustworthy, modern e-commerce. What to avoid (childish overload, gradient/pink excess, giant rounded cards, random shadows, AI-generic landing look). Brand cues to lean on. Final tokens are FROZEN in docs/design/S2.4-design-system-and-approval.md (DESIGN APPROVED V1).
 ---
 
 # Storefront UI design direction
 
 ## Apply when
-Making any visual decision before S2.4, or implementing screens after design approval.
+Making any visual decision, or implementing screens against the approved design.
 
-## Status
+## Status — DESIGN APPROVED V1
 
-**Do not invent final visual tokens (colors, spacing, radii, type scale) in S0.5/S1.**
-S2 Design Discovery and **S2.4 Design Approval** define them. This skill sets
-*direction and guardrails* so early scaffolding and moodboard work stay on-brand.
+**Direction: Soft Trust Commerce, frozen at S2.4.** Final tokens (colors, spacing,
+radii, type scale) live in **`docs/design/S2.4-design-system-and-approval.md`** — read
+it before touching any visual value. This skill states the *feel* and guardrails; it
+does not restate the token table.
 
 ## Desired feel
 
@@ -47,13 +48,16 @@ shop that feels caring and safe, and also competent to take a payment.
    availability, or the primary CTA.
 4. **Accessibility is part of the design** (`accessibility`) — contrast, focus states,
    non-color status, touch targets are design decisions, not later fixes.
-5. **After S2.4, the approved design is a contract** (CLAUDE.md §11) — implement it
-   faithfully; do not re-style it while coding.
+5. **The approved design is a contract** (CLAUDE.md §11, S2.4 §19) — implement it
+   faithfully from `docs/design/S2.4-design-system-and-approval.md`; do not re-style it
+   while coding. A real problem is a Design Deviation Proposal (S2.4 §19), not a silent
+   fix.
 
 ## Anti-patterns to reject in review
 
 - A new page introducing its own gradient/color/radius language.
-- Pink used as the primary brand color across large surfaces.
+- Pink used as the primary brand color, or as a fill behind text/a numeral, anywhere.
 - Decorative shadows/blobs added ad hoc per component.
 - Placeholder "lorem + emoji card" sections shipped as real UI.
-- Final hex values / spacing scales committed as "the tokens" before S2.4.
+- Hex values / spacing values invented or approximated instead of read from
+  `docs/design/S2.4-design-system-and-approval.md`.

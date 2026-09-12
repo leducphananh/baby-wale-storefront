@@ -6,9 +6,9 @@ import { env } from "@/lib/env";
 import "./globals.css";
 
 /**
- * Technical font foundation only — a clean, Vietnamese-capable sans loaded
- * through `next/font` (self-hosted, no layout-shift). The typography *scale*
- * (sizes, weights, roles) is defined at S2.4 Design Approval, not here.
+ * Be Vietnam Pro loaded through `next/font` (self-hosted, no layout-shift).
+ * The typography *scale* (sizes, weights, roles) is frozen at S2.4 and
+ * implemented in `globals.css` (S2.5) — this only loads the font file.
  */
 const bodyFont = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
