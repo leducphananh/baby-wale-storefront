@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S2.5 complete (Design System Implementation); next is S3 (NOT started)
+## 2. Current phase — S3 complete (Public Catalog Data Contract); next is S4 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -99,7 +99,28 @@ conflict, resolve per §3.
   `SectionHeading`, `EmptyState`, `ErrorState`, `Header`, `CartIndicator`). No
   `ProductCard`/`PaymentRow`/`CategoryTile` (commerce scope, S3+). **No Supabase
   calls, no migrations, no RPC, no S3+ route/business logic.**
-- **Next: S3** — Public Catalog Data Contract. **Not started.** Do not begin S3+ work
+- **S3** — Public Catalog Data Contract — **done**
+  (`docs/storefront/S3-public-catalog-data-contract.md`): the storefront's first
+  Supabase-touching phase. Additive migration on the shared project (`products.slug`
+  / `categories.slug` + backfill, `products.is_web_visible boolean DEFAULT false`
+  per locked O1, a `slugify()` helper + admin-compat auto-slug trigger) and three
+  new `SECURITY DEFINER` functions — `list_storefront_categories`,
+  `list_storefront_products`, `get_storefront_product_by_slug` — implementing §5's
+  RPC-only architecture (no `anon` grant on any base table/view, ever). `in_stock`
+  is a boolean using the exact FEFO-safe predicate `complete_order()` uses (never an
+  exact quantity). Verified with real black-box PostgREST calls against the live
+  project (positive + 15 negative security tests — every admin/report RPC and every
+  base table 401s for `anon`; no existence-leak on a hidden product; no column-
+  widening via `?select=`). Found and fixed two real issues in-phase: a Supabase
+  default-privilege grant that silently gave `anon` EXECUTE on a helper function,
+  and an admin-compatibility break (`create-product.ts` would have failed a new
+  NOT NULL constraint) — both root-caused against the live database, not guessed.
+  Typed storefront data-access layer added (`src/features/catalog/`), zero
+  `select('*')`, zero `.from(...)`, zero catalog UI. **Migration applied live and
+  recorded in this repo's own `supabase/migrations/`; still needs manual copying
+  into `baby-store-web/supabase/migrations/` (Admin Coordination follow-up — not
+  done here, §14).**
+- **Next: S4** — Catalog Browse / Homepage. **Not started.** Do not begin S4+ work
   until asked.
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
@@ -126,11 +147,17 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
   (`tsc --noEmit`) · `yarn test` (`vitest run`) · `yarn test:watch`.
 - Key paths: `src/app/` (routes, incl. the design tokens in `globals.css`),
   `src/lib/env.ts` (validated public env), `src/lib/supabase/server.ts` (server anon
-  client), `src/lib/utils.ts` (`cn()`), `src/components/ui/` (themed primitives),
-  `src/components/layout/` + `src/components/site/` (layout/header primitives),
-  `src/test/` (test setup), `vitest.config.mts`. Env: `.env.example` (committed
-  placeholders), `.env.local` (gitignored). Feature folders (`src/features/*`) appear
-  when features are built.
+  client, typed `<Database>`), `src/lib/utils.ts` (`cn()`), `src/types/database.ts`
+  (generated Supabase types, regenerated independently of the admin repo — S0 C11),
+  `src/components/ui/` (themed primitives), `src/components/layout/` +
+  `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
+  public catalog data-access layer + DTOs), `supabase/migrations/` (this repo's own
+  record of what it applied to the **shared** project — see §2 S3 for the
+  admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
+  (aliases `server-only` to a test stub — see `src/test/stubs/server-only.ts`). Env:
+  `.env.example` (committed placeholders), `.env.local` (gitignored, already points
+  at the real shared project). Feature folders (`src/features/*`) appear when
+  features are built.
 - Run `yarn lint && yarn typecheck && yarn test && yarn build` at the end of every
   phase (§12).
 
@@ -217,10 +244,13 @@ Order lookup
     storefront does not expose exact batch stock, expiration dates, purchase price, lot
     numbers, or any inventory internals. Availability is a **boolean/label** derived
     server-side (`Còn hàng` / `Hết hàng`).
-  - Conceptual RPCs (built in S3/S6, **not** S0.5): `list_storefront_products(...)`,
-    `get_storefront_product_by_slug(...)`, `list_storefront_categories(...)`,
-    `create_storefront_order(...)`, `get_storefront_order_by_token(...)`. Each returns
-    **only** the explicit storefront-safe contract.
+  - **Built at S3:** `list_storefront_categories()`, `list_storefront_products(...)`,
+    `get_storefront_product_by_slug(...)` — `SECURITY DEFINER`, `anon`-executable,
+    zero table/view grant to `anon` anywhere (verified with real black-box PostgREST
+    negative tests, `docs/storefront/S3-public-catalog-data-contract.md`).
+  - **Still conceptual (S7):** `create_storefront_order(...)`,
+    `get_storefront_order_by_token(...)`. Each returns **only** the explicit
+    storefront-safe contract.
 
 See `nextjs-data-access`, `public-data-contract`, `supabase-storefront`,
 `nextjs-cache-correctness`.
@@ -354,8 +384,9 @@ S2    UX & Visual Design
 
 S2.5  Design System Implementation (Tailwind v4 + shadcn-style UI primitives) ✅
 
-S3    Public Catalog Data Contract  ← next
-S4    Catalog Browse / Homepage
+S3    Public Catalog Data Contract              ✅
+
+S4    Catalog Browse / Homepage  ← next
 S5    Product Detail
 S6    Shopping Cart
 S7    Storefront Order Backend Contract

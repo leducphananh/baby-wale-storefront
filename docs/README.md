@@ -10,6 +10,7 @@
 | [`design/S2.3-high-fidelity-figma-design.md`](design/S2.3-high-fidelity-figma-design.md) | **S2.3 output + S2.3R corrections (§13–§14).** A build-ready high-fidelity design spec for Soft Trust Commerce: an **exploratory token proposal** (candidate hex, Be Vietnam Pro type ramp, spacing/radius/elevation, container/grid — all "PROPOSED, S2.4 to approve"), full **component anatomy + states** (~30 components), **per-screen layouts** (mobile 390 / desktop 1440), responsive + accessibility decisions, a 4-tier screen-completeness matrix, a content-placeholder register, and the S2.4 handoff. Figma was **not usable** (connected account is a Starter/**View** seat), so the visual deliverable is a **Claude Design canvas (v3)**: [Baby Wale Storefront — Hi-Fi](https://claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640). **S2.3R** rendered all 9 artboards with headless Chrome and fixed: the unsupported "chính hãng" hero claim (→ neutral mock copy), the cart-badge contrast (→ Trust Blue, ≥4.5:1 rule), two clipped artboards, and a stretched quantity stepper; it also recorded the 360px stress result and the owner-review questions (R1–R7). Its **exploratory** token values are now superseded by S2.4 (below). **No production code, no dependencies, no DB.** |
 | [`design/S2.4-design-system-and-approval.md`](design/S2.4-design-system-and-approval.md) | **DESIGN APPROVED — BABY WALE STOREFRONT V1.** The authoritative design source of truth: **frozen** colour tokens (with recalculated contrast — the pink cart-badge is permanently rejected, ≥4.5:1 codified for any text/numeral badge), the frozen Be Vietnam Pro type ramp, frozen spacing/grid (incl. a ≤374px compact-mobile rule that keeps 2 columns), frozen radius/elevation/control-sizing, frozen responsive + sticky-model rules, frozen design contracts for `ProductCard` / `Header` / Product Detail / Cart / Checkout / Success-Tracking / status labels, a frozen content-claim contract (the unapproved "Giao hàng toàn quốc" claim is removed; "chính hãng" and a return-window stay gated), the 1:1 product-image frame approved for V1 with a mandatory pre-S4 real-image validation checkpoint, an icon-strategy decision (Lucide + matched custom SVGs, not installed), a Tailwind v4/shadcn S2.5 mapping, a source-of-truth hierarchy, and a Design-Change Governance process. **Overrides S2.1–S2.3R wherever they conflict. No production code, no dependencies, no DB.** |
 | [`design/S2.5-design-system-implementation.md`](design/S2.5-design-system-implementation.md) | **S2.5 output.** A short implementation reference (not a token source — S2.4 stays authoritative): where every S2.4 token lives in `src/app/globals.css` (Tailwind v4 `@theme` + typography as `@layer components` classes + a custom `compact` ≤374px variant), the shadcn-style primitive set in `src/components/ui` / `layout` / `site` (Radix + CVA, hand-built rather than CLI-installed), and what remains prohibited. Notes one open flag: the S2.5 brief named a `480px` breakpoint the S2.4 doc does not define — not added, reported rather than invented. **First production code and dependencies of the project** (`lucide-react`, Radix primitives, CVA, `clsx`/`tailwind-merge`) — no Supabase, no DB, no S3+ business logic. |
+| [`storefront/S3-public-catalog-data-contract.md`](storefront/S3-public-catalog-data-contract.md) | **S3 output.** The storefront's first Supabase-touching phase: an additive migration on the **shared** project (`products.slug`/`categories.slug` + backfill, `products.is_web_visible` per locked O1, an admin-compat auto-slug trigger) and three new `SECURITY DEFINER` functions (`list_storefront_categories`, `list_storefront_products`, `get_storefront_product_by_slug`) implementing CLAUDE.md §5's RPC-only correction to S0 Part E — zero `anon` grant on any base table/view, ever. `in_stock` is a boolean using `complete_order()`'s own FEFO-safe predicate. Verified with real black-box PostgREST negative tests against the live database (not mocked). Documents two real issues found and fixed in-phase (a Supabase default-privilege grant leak; an admin-compatibility break) and an explicit Admin Coordination follow-up (mirroring the migration into the admin repo's tracked history). Typed data-access layer in `src/features/catalog/`. No catalog UI, no cart, no checkout, no order RPC. |
 
 ## Corrections to S0 recorded in CLAUDE.md and the skills
 
@@ -27,18 +28,32 @@
 
 ## Current phase
 
-**S2.5 complete — Design System Implementation.**
+**S3 complete — Public Catalog Data Contract.**
+[`storefront/S3-public-catalog-data-contract.md`](storefront/S3-public-catalog-data-contract.md)
+is the storefront's first phase to touch Supabase: an additive migration on the
+**shared** project (`products.slug`/`categories.slug` + Vietnamese-safe backfill,
+`products.is_web_visible boolean DEFAULT false` per the locked O1 decision, an
+admin-compatibility auto-slug trigger) plus three new `anon`-executable
+`SECURITY DEFINER` functions implementing CLAUDE.md §5's correction to S0 Part E —
+`anon` gets **zero** grant on any base table or view, ever, verified with real
+black-box PostgREST calls against the live database (positive + 15 negative
+security tests). `in_stock` is a boolean computed with `complete_order()`'s own
+FEFO-safe predicate — never an exact quantity. Two real issues were found and
+fixed in-phase (a Supabase default-privilege grant that leaked `EXECUTE` on a
+helper function to `anon`; an admin `create-product` NOT NULL regression). A typed
+data-access layer landed in `src/features/catalog/`. No catalog UI, no cart, no
+checkout, no order RPC. **Next: S4 — Catalog Browse / Homepage.**
+
+Earlier: **S2.5 complete — Design System Implementation.**
 [`design/S2.5-design-system-implementation.md`](design/S2.5-design-system-implementation.md)
-implements every frozen S2.4 token in `src/app/globals.css` and Tailwind v4, removes
-the S1 scaffold's dark-mode block (light-only), and adds a themed, shadcn-style
+implemented every frozen S2.4 token in `src/app/globals.css` and Tailwind v4, removed
+the S1 scaffold's dark-mode block (light-only), and added a themed, shadcn-style
 primitive set (`Button`, `Input`, `Textarea`, `Label`, `FormField`, `RadioGroup`,
 `Badge`, `Skeleton`, `Separator`, `Dialog`, `Sheet`, `Container`, `Stack`, `Grid`,
 `SectionHeading`, `EmptyState`, `ErrorState`, `Header`, `CartIndicator`) built on
-Radix + `class-variance-authority`, plus `lucide-react` for icons. No `ProductCard` /
-`PaymentRow` / `CategoryTile` (commerce scope, S3+), no Supabase calls, no migrations,
-no RPCs. **Next: S3 — Public Catalog Data Contract.**
+Radix + `class-variance-authority`, plus `lucide-react` for icons.
 
-Earlier: **DESIGN APPROVED — Baby Wale Storefront V1 (S2.4 complete).**
+Earlier still: **DESIGN APPROVED — Baby Wale Storefront V1 (S2.4 complete).**
 [`design/S2.4-design-system-and-approval.md`](design/S2.4-design-system-and-approval.md)
 freezes the design system: final colour tokens (with recalculated contrast; the pink
 cart-badge is permanently rejected, ≥4.5:1 required for any text/numeral badge), the
@@ -67,4 +82,7 @@ republished as **v4** at S2.4 to remove the unapproved "Giao hàng toàn quốc"
 **S2.2** recommended Soft Trust Commerce; **S2.1** defined the IA, navigation, and all
 customer flows; **S1** delivered the Next.js 16 technical scaffold.
 
-Zero database migrations to date; zero changes to the admin repo.
+Three additive database migrations to date (S3, `supabase/migrations/`), applied to
+the shared Supabase project — see `storefront/S3-public-catalog-data-contract.md`.
+Zero changes to the admin repo's files (the migration is not yet mirrored into
+`baby-store-web/supabase/migrations/` — an open Admin Coordination follow-up).

@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { env } from "@/lib/env";
+import type { Database } from "@/types/database";
 
 /**
  * Request-scoped Supabase client for Server Components and Route Handlers.
@@ -14,14 +15,17 @@ import { env } from "@/lib/env";
  *   with no rewrite. There is no customer auth today.
  * - `import "server-only"` makes this module fail the build if a Client
  *   Component ever imports it.
- *
- * S1 creates the client but issues no query — the storefront public read RPCs
- * do not exist yet (built S3+). See nextjs-data-access, public-data-contract.
+ * - Typed against the generated `Database` (S0 C11 — regenerated
+ *   independently in this repo, see `src/types/database.ts`) so every
+ *   `.rpc(...)` call is checked against the real public catalog contract
+ *   (S3) — `anon` can only reach `list_storefront_categories`,
+ *   `list_storefront_products`, `get_storefront_product_by_slug`; every
+ *   other function 401s at the database, not just "isn't called from here".
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {

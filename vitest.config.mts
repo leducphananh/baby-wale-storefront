@@ -16,6 +16,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      // See src/test/stubs/server-only.ts — the real package unconditionally
+      // throws under plain Node/Vitest resolution (it only no-ops via
+      // webpack's `react-server` export condition in a real Next build).
+      "server-only": path.resolve(import.meta.dirname, "./src/test/stubs/server-only.ts"),
     },
   },
   test: {
