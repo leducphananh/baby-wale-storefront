@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S3 complete (Public Catalog Data Contract); next is S4 (NOT started)
+## 2. Current phase — S4 complete (Catalog Browse / Homepage); next is S5 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -120,8 +120,26 @@ conflict, resolve per §3.
   recorded in this repo's own `supabase/migrations/`; still needs manual copying
   into `baby-store-web/supabase/migrations/` (Admin Coordination follow-up — not
   done here, §14).**
-- **Next: S4** — Catalog Browse / Homepage. **Not started.** Do not begin S4+ work
-  until asked.
+- **S4** — Catalog Browse / Homepage — **done**: the real customer-facing shell —
+  `SiteHeader`/`SiteFooter` wired into the root layout (every route), homepage (hero →
+  categories → "Sản phẩm mới" rail → S2.4 §15 trust copy), `/san-pham` listing
+  (`?danh-muc=`/`?trang=` search-param filter + pagination, category chips), the
+  canonical `/danh-muc/[slug]` category page (`notFound()` on an unknown slug), and
+  the `ProductCard`/`CategoryTile`/`StockBadge`/`Price`/`Pagination`/`ProductRail`
+  primitives (S2.4 §10.1/§10.9 contracts). Consumes only the S3 RPCs
+  (`list_storefront_categories`/`list_storefront_products`) — zero `.from(...)`, zero
+  `select('*')`, zero new migration. `selling_price = 0` renders **"Liên hệ"**, never
+  "0 ₫" (documented S4 presentation rule, `src/lib/format/money.ts`). No product image
+  bucket exists yet (S3 finding, still open) — every card shows the frozen neutral
+  placeholder frame. Cart icon is visually present (frozen Header anatomy) but
+  `count=0` and links to `/gio-hang`, which doesn't exist until S6 — a graceful 404,
+  not fake functionality; same reasoning for the disabled search field (no `p_search`
+  RPC parameter yet). No product detail page (S5) — `ProductCard`/rail links to
+  `/san-pham/[slug]` anyway (graceful 404 until S5 ships, not a dead/fake link).
+  Verified with real screenshots (390/320/1440px) against real (temporarily, then
+  reverted) visible catalog rows — found and fixed one real layout bug (price+badge
+  mid-word wrap on narrow cards) from that render, not just from code review.
+- **Next: S5** — Product Detail. **Not started.** Do not begin S5+ work until asked.
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius
@@ -386,8 +404,9 @@ S2.5  Design System Implementation (Tailwind v4 + shadcn-style UI primitives) �
 
 S3    Public Catalog Data Contract              ✅
 
-S4    Catalog Browse / Homepage  ← next
-S5    Product Detail
+S4    Catalog Browse / Homepage              ✅
+
+S5    Product Detail  ← next
 S6    Shopping Cart
 S7    Storefront Order Backend Contract
 S8    Checkout

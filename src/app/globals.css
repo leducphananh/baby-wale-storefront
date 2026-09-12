@@ -258,4 +258,17 @@ body {
     position: absolute;
     inset: -4px;
   }
+
+  /*
+   * Horizontal-rail scrollbar hiding (S2.4 §2.2/§9.3): native scroll stays
+   * fully enabled (touch/wheel/keyboard) — only the *visual* scrollbar is
+   * hidden. Never `overflow: hidden`, which would kill scrolling entirely.
+   */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

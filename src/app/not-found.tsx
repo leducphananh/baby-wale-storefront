@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 
 /** Foundation 404, restyled on the S2.4 design system (S2.5). */
 export default function NotFound() {
+  // A plain <div>, not <main> — renders inside the root layout's <main>
+  // (see the same note in error.tsx).
   return (
-    <main className="flex min-h-dvh flex-col justify-center bg-bg py-16">
+    <div className="flex min-h-[60dvh] flex-col justify-center bg-bg py-16">
       <Container className="max-w-xl">
         <EmptyState
           titleAs="h1"
@@ -20,6 +22,6 @@ export default function NotFound() {
           }
         />
       </Container>
-    </main>
+    </div>
   );
 }

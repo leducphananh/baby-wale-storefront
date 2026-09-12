@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
 import { env } from "@/lib/env";
 
 import "./globals.css";
@@ -17,6 +19,15 @@ const bodyFont = Be_Vietnam_Pro({
   display: "swap",
 });
 
+/**
+ * `SiteHeader` (categories for nav) renders on every route via this layout.
+ * Matches the page-level tier (S4 catalog pages use `revalidate = 300`) so
+ * the header's own data request isn't the thing forcing a fully dynamic
+ * render — see the pages' own `revalidate` exports for the tier rationale
+ * (nextjs-cache-correctness).
+ */
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: {
@@ -24,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | Baby Wale",
   },
   description:
-    "Baby Wale — cửa hàng mẹ và bé: bỉm, sữa và đồ dùng cho bé. Trang đang được xây dựng.",
+    "Baby Wale — cửa hàng mẹ và bé: bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng, nhân viên xác nhận từng đơn trước khi xử lý.",
   applicationName: "Baby Wale",
 };
 
@@ -35,7 +46,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={bodyFont.variable}>
-      <body>{children}</body>
+      <body className="flex min-h-dvh flex-col">
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+      </body>
     </html>
   );
 }

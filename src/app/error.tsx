@@ -16,8 +16,12 @@ export default function RouteError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // A plain <div>, not <main> — this renders inside the root layout's
+  // <main> (error.tsx is a sibling of page.tsx at the same route segment,
+  // and the parent layout still wraps it), so a second <main> here would
+  // be an invalid nested landmark (accessibility).
   return (
-    <main className="flex min-h-dvh flex-col justify-center bg-bg py-16">
+    <div className="flex min-h-[60dvh] flex-col justify-center bg-bg py-16">
       <Container className="max-w-xl">
         <ErrorState
           titleAs="h1"
@@ -30,6 +34,6 @@ export default function RouteError({
           }
         />
       </Container>
-    </main>
+    </div>
   );
 }
