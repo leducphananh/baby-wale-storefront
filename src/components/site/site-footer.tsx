@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
+import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
 
 /**
  * Site footer — S2.4 approved factual trust copy (§15) only. No fabricated
@@ -29,9 +30,11 @@ function SiteFooter() {
 
         <div className="flex flex-col gap-2">
           <span className="text-label-role text-text">Thông tin</span>
-          <p className="text-body-sm text-text-muted">Thanh toán khi nhận hàng (COD) hoặc chuyển khoản</p>
-          <p className="text-body-sm text-text-muted">Nhân viên xác nhận từng đơn trước khi xử lý</p>
-          <p className="text-body-sm text-text-muted">Hỗ trợ: [OWNER CONTENT TBD]</p>
+          {TRUST_COPY_LINES.map((line) => (
+            <p key={line} className="text-body-sm text-text-muted">
+              {line}
+            </p>
+          ))}
         </div>
       </Container>
 

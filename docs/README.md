@@ -12,6 +12,7 @@
 | [`design/S2.5-design-system-implementation.md`](design/S2.5-design-system-implementation.md) | **S2.5 output.** A short implementation reference (not a token source — S2.4 stays authoritative): where every S2.4 token lives in `src/app/globals.css` (Tailwind v4 `@theme` + typography as `@layer components` classes + a custom `compact` ≤374px variant), the shadcn-style primitive set in `src/components/ui` / `layout` / `site` (Radix + CVA, hand-built rather than CLI-installed), and what remains prohibited. Notes one open flag: the S2.5 brief named a `480px` breakpoint the S2.4 doc does not define — not added, reported rather than invented. **First production code and dependencies of the project** (`lucide-react`, Radix primitives, CVA, `clsx`/`tailwind-merge`) — no Supabase, no DB, no S3+ business logic. |
 | [`storefront/S3-public-catalog-data-contract.md`](storefront/S3-public-catalog-data-contract.md) | **S3 output.** The storefront's first Supabase-touching phase: an additive migration on the **shared** project (`products.slug`/`categories.slug` + backfill, `products.is_web_visible` per locked O1, an admin-compat auto-slug trigger) and three new `SECURITY DEFINER` functions (`list_storefront_categories`, `list_storefront_products`, `get_storefront_product_by_slug`) implementing CLAUDE.md §5's RPC-only correction to S0 Part E — zero `anon` grant on any base table/view, ever. `in_stock` is a boolean using `complete_order()`'s own FEFO-safe predicate. Verified with real black-box PostgREST negative tests against the live database (not mocked). Documents two real issues found and fixed in-phase (a Supabase default-privilege grant leak; an admin-compatibility break) and an explicit Admin Coordination follow-up (mirroring the migration into the admin repo's tracked history). Typed data-access layer in `src/features/catalog/`. No catalog UI, no cart, no checkout, no order RPC. |
 | **S4 output** (no dedicated doc — this table row is its record) | Real customer-facing catalog browsing: `SiteHeader`/`SiteFooter` in the root layout, the homepage (hero → categories → "Sản phẩm mới" rail → S2.4 §15 trust copy), `/san-pham` (search-param category filter + pagination), the canonical `/danh-muc/[slug]` category page, and the `ProductCard`/`CategoryTile`/`StockBadge`/`Price`/`Pagination`/`ProductRail` primitives (S2.4 §10.1/§10.9). Consumes only the S3 RPCs. `selling_price = 0` renders "Liên hệ" (documented S4 rule, never "0 ₫"). No product image bucket yet, so every card shows the frozen missing-image placeholder; cart icon is visually present but not functional (S6) and product-card links target `/san-pham/[slug]` (S5, not built yet) — both documented, deliberate, graceful-404 states, not fake functionality. Verified with real screenshots against real (temporarily visible, then reverted) catalog data — found and fixed a real price/badge wrap bug from that render. No new dependency, no new migration. |
+| **S5 output** (no dedicated doc — this table row is its record) | `/san-pham/[slug]` Product Detail, sourced entirely from `get_storefront_product_by_slug` (S3) — the frozen S2.4 §10.3 hierarchy (breadcrumb → gallery → name/brand → price → stock → unit → quantity → Add-to-Cart → trust → description → specification → "Sản phẩm liên quan", reusing `list_storefront_products` filtered to the same category, no new RPC). Introduced the first client cart state (`zustand`, `src/features/cart/store.ts` — explicitly authorized by the S5 brief as "the minimum cart state infrastructure needed for the Product Detail CTA"), matching `cart-state`'s frozen line shape; `CartIndicator` now self-reads the live store. The sticky mobile Add-to-Cart bar uses a real `IntersectionObserver` so exactly one Add-to-Cart affordance is ever visible (S2.4 §9.2/§10.3). OOS: button stays visible, disabled, labelled "Hết hàng". Quantity has no inventory-backed max (S6/S7 enforce that). No product image field/bucket exists yet, so the gallery always shows the placeholder — zero Storage requests result; the S5 brief's premise of "recently identified elevated Supabase Storage Egress" was checked against this repo's history and could not be found, and is architecturally impossible today (no public bucket exists yet to generate egress from) — reported, not silently accepted. Extracted the trust copy (used 3× now) into `src/lib/content/trust-copy.ts`. Verified with real screenshots against real (temporarily visible, then reverted) in-stock and out-of-stock products. No new migration, zero `.from(...)`, zero `select('*')`. |
 
 ## Corrections to S0 recorded in CLAUDE.md and the skills
 
@@ -29,26 +30,35 @@
 
 ## Current phase
 
-**S4 complete — Catalog Browse / Homepage.** The storefront has a real, browsable
-customer front end for the first time: a shared `SiteHeader`/`SiteFooter` (every
-route, via the root layout), a homepage (hero → real categories → real "Sản phẩm
-mới" rail → the S2.4 §15 approved trust copy only), `/san-pham` (category filter +
-pagination via URL search params, never client-side), and the canonical
-`/danh-muc/[slug]` category page (`notFound()` on an unknown slug). `ProductCard`,
-`CategoryTile`, `StockBadge`, `Price`, `Pagination`, and `ProductRail` implement the
-S2.4 §10.1/§10.9 design contracts and consume only the S3 RPCs — zero `.from(...)`,
-zero `select('*')`, zero new migration. `selling_price = 0` renders **"Liên hệ"**,
-never a literal "0 ₫" (a new, documented S4 presentation rule — the real catalog is
-still largely unpriced). No product-image bucket exists yet, so every card shows the
-frozen neutral placeholder; the cart icon is visually present (frozen header anatomy)
-but not functional yet (S6), and `ProductCard` links to `/san-pham/[slug]` (S5, not
-built) — both land on the existing calm `not-found.tsx` today, a documented, honest
-gap rather than fake functionality. Verified with real screenshots (390/320/1440px)
-against real catalog rows (temporarily made visible for the check, then reverted) —
-found and fixed one real layout bug (price + out-of-stock badge wrapping mid-word on
-narrow cards) directly from that render. **Next: S5 — Product Detail.**
+**S5 complete — Product Detail.** `/san-pham/[slug]` renders the frozen S2.4 §10.3
+hierarchy end to end (breadcrumb → gallery → name/brand → price → stock → unit →
+quantity → Add-to-Cart → trust → description → specification → "Sản phẩm liên quan"),
+sourced entirely from `get_storefront_product_by_slug` (S3) — a hidden, archived, or
+unknown slug all render `notFound()` identically. This phase introduces the
+storefront's **first client cart state** (`zustand`), explicitly authorized by the S5
+brief as the minimum needed for the "Thêm vào giỏ" CTA — the line shape matches
+`cart-state`'s frozen spec, `cachedUnitPrice` is display-only, and `CartIndicator` now
+shows the real count. The sticky mobile Add-to-Cart bar uses a real
+`IntersectionObserver` so exactly one Add-to-Cart affordance is ever visible at once
+(S2.4 §9.2). Out-of-stock: the button stays visible, disabled, labelled "Hết hàng" —
+never hidden. No product-image bucket exists yet (same S3/S4 finding), so the gallery
+always shows the neutral placeholder, which also means **zero** Storage requests
+happen today — worth noting since the S5 brief assumed "recently identified elevated
+Supabase Storage Egress" as a premise; that claim could not be found anywhere in this
+repo's history and is architecturally impossible right now (nothing serves a public
+image yet). Verified with real screenshots (320/390/1440px) against real (temporarily
+visible, then reverted) in-stock and out-of-stock products. Zero new migration, zero
+`.from(...)`, zero `select('*')`. **Next: S6 — Shopping Cart.**
 
-Earlier: **S3 complete — Public Catalog Data Contract.**
+Earlier: **S4 complete — Catalog Browse / Homepage.** A shared `SiteHeader`/
+`SiteFooter` (every route), a homepage (hero → real categories → real "Sản phẩm mới"
+rail → the S2.4 §15 approved trust copy only), `/san-pham` (category filter +
+pagination via URL search params), and the canonical `/danh-muc/[slug]` category page.
+`ProductCard`, `CategoryTile`, `StockBadge`, `Price`, `Pagination`, and `ProductRail`
+implement the S2.4 §10.1/§10.9 design contracts. `selling_price = 0` renders
+**"Liên hệ"**, never a literal "0 ₫" — the real catalog is still largely unpriced.
+
+Earlier still: **S3 complete — Public Catalog Data Contract.**
 [`storefront/S3-public-catalog-data-contract.md`](storefront/S3-public-catalog-data-contract.md)
 is the storefront's first phase to touch Supabase: an additive migration on the
 **shared** project (`products.slug`/`categories.slug` + Vietnamese-safe backfill,

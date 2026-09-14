@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/layout/section-heading";
 import { Button } from "@/components/ui/button";
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
+import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
 
 /**
  * Storefront homepage (S4) — a real shopping entry point: hero → categories
@@ -80,9 +81,11 @@ export default async function HomePage() {
       {/* Trust / service info — S2.4 §15 approved copy only */}
       <Container>
         <div className="grid grid-cols-1 gap-4 rounded-md border border-border bg-surface p-6 sm:grid-cols-3">
-          <p className="text-body-sm text-text">Thanh toán khi nhận hàng (COD) hoặc chuyển khoản</p>
-          <p className="text-body-sm text-text">Nhân viên xác nhận từng đơn trước khi xử lý</p>
-          <p className="text-body-sm text-text">Hỗ trợ: [OWNER CONTENT TBD]</p>
+          {TRUST_COPY_LINES.map((line) => (
+            <p key={line} className="text-body-sm text-text">
+              {line}
+            </p>
+          ))}
         </div>
       </Container>
     </div>

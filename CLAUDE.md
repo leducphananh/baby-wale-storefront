@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S4 complete (Catalog Browse / Homepage); next is S5 (NOT started)
+## 2. Current phase — S5 complete (Product Detail); next is S6 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -139,7 +139,32 @@ conflict, resolve per §3.
   Verified with real screenshots (390/320/1440px) against real (temporarily, then
   reverted) visible catalog rows — found and fixed one real layout bug (price+badge
   mid-word wrap on narrow cards) from that render, not just from code review.
-- **Next: S5** — Product Detail. **Not started.** Do not begin S5+ work until asked.
+- **S5** — Product Detail — **done**: `/san-pham/[slug]`, the frozen S2.4 §10.3
+  hierarchy (breadcrumb → gallery → name → brand → price → stock → unit → quantity →
+  Add-to-Cart → trust → description → specification → "Sản phẩm liên quan"), sourced
+  entirely from `get_storefront_product_by_slug` (S3) — a hidden/archived/unknown slug
+  all `notFound()` identically. "Related" reuses `list_storefront_products` filtered
+  to the same category (no new RPC). Introduced the **first client cart state**
+  (`zustand`, `src/features/cart/store.ts`) — authorized explicitly by this phase's own
+  brief as "the minimum cart state infrastructure needed for the Product Detail CTA";
+  line shape matches `cart-state`'s frozen spec exactly, `cachedUnitPrice` is
+  display-only, never authoritative. `CartIndicator` now self-reads the live store
+  (still accepts an explicit `count` override, used by every existing test). The sticky
+  mobile Add-to-Cart bar (S2.4 §9.2/§10.3) uses a real `IntersectionObserver` on the
+  in-flow CTA — exactly one Add-to-Cart affordance is ever visible at a time, by
+  construction. OOS: button stays visible, disabled, labelled "Hết hàng" (never
+  hidden), quantity disabled. Quantity has **no inventory-backed max** (only a soft
+  UX ceiling) — real enforcement is S6/S7. No product image field/bucket exists yet
+  (same S3/S4 finding) — gallery always shows the neutral placeholder; **zero**
+  Storage requests as a direct consequence, which also means the phase brief's
+  "recently identified elevated Supabase Storage Egress" premise could not be found
+  anywhere in this repo's history and is architecturally impossible today (no public
+  bucket exists to generate egress from) — noted, not silently accepted. Extracted the
+  3×-duplicated trust copy into `src/lib/content/trust-copy.ts` (footer, homepage, PDP)
+  to remove a real copy-drift risk. Verified with real screenshots (320/390/1440px)
+  against real (temporarily visible, then reverted) in-stock and out-of-stock products.
+  Zero new migration, zero `.from(...)`, zero `select('*')`.
+- **Next: S6** — Shopping Cart. **Not started.** Do not begin S6+ work until asked.
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius
@@ -155,8 +180,10 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
 - Package manager: **Yarn 1.22.22** (`yarn.lock`). Do not add a second lockfile.
 - Node **>= 20.9** (developed on 22.17).
 - Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
-  and (later) validation. **No `service_role`, no TanStack Query, no Zustand, no
-  RHF yet** — added in the phase that first needs them.
+  and (later) validation. **No `service_role`, no TanStack Query, no RHF yet** — added
+  in the phase that first needs them.
+- Cart state (added S5): `zustand` — `src/features/cart/store.ts`, client-only, display
+  state (`cart-state` skill). No `/gio-hang` page, no `/api/cart/revalidate` yet (S6).
 - Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
   `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
   `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
@@ -169,7 +196,9 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
   (generated Supabase types, regenerated independently of the admin repo — S0 C11),
   `src/components/ui/` (themed primitives), `src/components/layout/` +
   `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
-  public catalog data-access layer + DTOs), `supabase/migrations/` (this repo's own
+  public catalog data-access layer + DTOs), `src/features/cart/` (S5 client cart
+  store), `src/lib/content/` (shared customer-facing copy, e.g. trust-copy.ts),
+  `supabase/migrations/` (this repo's own
   record of what it applied to the **shared** project — see §2 S3 for the
   admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
   (aliases `server-only` to a test stub — see `src/test/stubs/server-only.ts`). Env:
@@ -406,8 +435,9 @@ S3    Public Catalog Data Contract              ✅
 
 S4    Catalog Browse / Homepage              ✅
 
-S5    Product Detail  ← next
-S6    Shopping Cart
+S5    Product Detail                          ✅
+
+S6    Shopping Cart  ← next
 S7    Storefront Order Backend Contract
 S8    Checkout
 S9    Order Success & Tracking

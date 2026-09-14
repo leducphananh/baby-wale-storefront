@@ -33,10 +33,11 @@ import { listStorefrontCategories } from "@/features/catalog/server/list-categor
  *   disclosure listing real categories — no new dropdown/Popover primitive
  *   added to the design system for this (a native element needs no client
  *   JS and is keyboard-operable by default).
- * - **Cart**: the icon/badge stay (frozen anatomy), `count={0}` (there is no
- *   cart yet — S6), linking to `/gio-hang`. That route doesn't exist until
- *   S6; visiting it lands on the existing, calm `not-found.tsx` — honest
- *   ("doesn't exist yet"), not fake ("appears to work").
+ * - **Cart**: `cartCount` is left unset so `CartIndicator` self-reads the
+ *   real Zustand cart store (S5, `cart-state` skill) — the badge now
+ *   reflects whatever "Thêm vào giỏ" has actually added. Links to
+ *   `/gio-hang`, which doesn't exist until S6; visiting it lands on the
+ *   existing, calm `not-found.tsx` — honest ("doesn't exist yet"), not fake.
  * - **"Tra cứu đơn hàng"**: omitted (optional slot) — that route is S8,
  *   further out than cart; not worth a 404 link yet.
  */
@@ -143,7 +144,7 @@ async function SiteHeader() {
     </Sheet>
   );
 
-  return <Header logo={logo} search={search} nav={nav} menuTrigger={menuTrigger} cartHref="/gio-hang" cartCount={0} />;
+  return <Header logo={logo} search={search} nav={nav} menuTrigger={menuTrigger} cartHref="/gio-hang" />;
 }
 
 export { SiteHeader };
