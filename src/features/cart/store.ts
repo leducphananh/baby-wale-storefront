@@ -8,15 +8,14 @@ import { persist } from "zustand/middleware";
  * (`cart-state` skill). Line shape matches the skill's frozen spec exactly:
  * `{ productId, slug, name, imageUrl, unit, quantity, cachedUnitPrice,
  * cachedAt }`. `cachedUnitPrice`/`cachedAt` are **display-only** — they
- * exist to show "giá đã thay đổi" once cart-revalidation exists (S6+) and
+ * exist to show "giá đã thay đổi" once cart-revalidation exists (S7+) and
  * are never sent as an authoritative value. `imageUrl` is always `null`
- * today — no public product image field/bucket exists yet (S3/S4 finding).
+ * today — no public product image field/bucket exists yet (S3/S4/S5
+ * finding).
  *
- * Introduced in S5 (Product Detail), not S6 — the S5 phase brief explicitly
- * authorizes "the minimum cart state infrastructure needed for the Product
- * Detail CTA", matching CLAUDE.md §10's "Zustand ... added in the phase
- * that first needs it." The full `/gio-hang` cart page, quantity edits from
- * the cart, and `/api/cart/revalidate` remain S6 scope.
+ * Introduced in S5 (the minimum needed for the Product Detail CTA);
+ * extended in S6 with `incrementQuantity`/`decrementQuantity` (the cart
+ * page's own quantity controls) and `selectCartSubtotal` (S6 — "Tạm tính").
  */
 export interface CartLine {
   productId: string;
@@ -46,6 +45,14 @@ interface CartState {
   addItem: (input: AddCartLineInput) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
+  /** Quantity + 1. No inventory-backed max — S3 never exposes exact stock. */
+  incrementQuantity: (productId: string) => void;
+  /**
+   * Quantity - 1, or **removes the line entirely** if it was already at 1
+   * (S6 business rule — the same single action a "-" press at the floor
+   * performs everywhere in this UI: below the minimum, there is no line).
+   */
+  decrementQuantity: (productId: string) => void;
   clear: () => void;
 }
 
@@ -53,6 +60,57 @@ interface CartState {
 function clampQuantity(quantity: number): number {
   const rounded = Math.floor(quantity);
   return Number.isFinite(rounded) && rounded >= 1 ? rounded : 1;
+}
+
+/**
+ * Sanitizes whatever was actually in `localStorage` before it becomes live
+ * state (S6 — persisted client data cannot be fully trusted; a customer can
+ * edit it directly in devtools). A line missing a usable `productId` is
+ * dropped (there is nothing safe to render or act on). Every other field is
+ * coerced to a safe default rather than rejecting the whole line — losing
+ * a product's cached name/unit is recoverable, losing the whole cart to one
+ * bad field is not. Lines sharing a `productId` (which should never happen
+ * from this store's own actions, but a hand-edited file could contain it)
+ * are merged, matching `addItem`'s own identity rule.
+ */
+function sanitizeLines(raw: unknown): CartLine[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  const merged = new Map<string, CartLine>();
+
+  for (const candidate of raw) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const item = candidate as Record<string, unknown>;
+
+    const productId = typeof item.productId === "string" && item.productId.length > 0 ? item.productId : null;
+    if (!productId) continue;
+
+    const quantity = clampQuantity(Number(item.quantity));
+    const priceCandidate = Number(item.cachedUnitPrice);
+    const cachedUnitPrice = Number.isFinite(priceCandidate) && priceCandidate >= 0 ? priceCandidate : 0;
+
+    const sanitized: CartLine = {
+      productId,
+      slug: typeof item.slug === "string" ? item.slug : "",
+      name: typeof item.name === "string" ? item.name : "",
+      imageUrl: typeof item.imageUrl === "string" ? item.imageUrl : null,
+      unit: typeof item.unit === "string" ? item.unit : "",
+      quantity,
+      cachedUnitPrice,
+      cachedAt: typeof item.cachedAt === "string" ? item.cachedAt : new Date().toISOString(),
+    };
+
+    const existing = merged.get(productId);
+    if (existing) {
+      existing.quantity = clampQuantity(existing.quantity + quantity);
+    } else {
+      merged.set(productId, sanitized);
+    }
+  }
+
+  return Array.from(merged.values());
 }
 
 export const useCartStore = create<CartState>()(
@@ -108,6 +166,27 @@ export const useCartStore = create<CartState>()(
           ),
         })),
 
+      incrementQuantity: (productId) =>
+        set((state) => ({
+          lines: state.lines.map((line) =>
+            line.productId === productId ? { ...line, quantity: line.quantity + 1 } : line,
+          ),
+        })),
+
+      decrementQuantity: (productId) =>
+        set((state) => {
+          const line = state.lines.find((candidate) => candidate.productId === productId);
+          if (!line) return state;
+          if (line.quantity <= 1) {
+            return { lines: state.lines.filter((candidate) => candidate.productId !== productId) };
+          }
+          return {
+            lines: state.lines.map((candidate) =>
+              candidate.productId === productId ? { ...candidate, quantity: candidate.quantity - 1 } : candidate,
+            ),
+          };
+        }),
+
       clear: () => set({ lines: [] }),
     }),
     {
@@ -115,6 +194,12 @@ export const useCartStore = create<CartState>()(
       // Only `lines` is meaningful to persist; the action functions are
       // recreated on every load regardless.
       partialize: (state) => ({ lines: state.lines }),
+      // Sanitize whatever localStorage actually contained (S6 §18) before it
+      // becomes live state — see `sanitizeLines`.
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        lines: sanitizeLines((persistedState as { lines?: unknown } | undefined)?.lines),
+      }),
     },
   ),
 );
@@ -122,4 +207,14 @@ export const useCartStore = create<CartState>()(
 /** Total item count across all lines — what the header badge shows. */
 export function selectCartCount(state: CartState): number {
   return state.lines.reduce((sum, line) => sum + line.quantity, 0);
+}
+
+/**
+ * Display-only subtotal — `Σ(quantity × cachedUnitPrice)` (S6 §13). **Not
+ * authoritative.** A future checkout (S7/S8) always re-reads the real
+ * `selling_price` server-side; this value exists purely so the customer can
+ * see an estimate on `/gio-hang` before that happens.
+ */
+export function selectCartSubtotal(state: CartState): number {
+  return state.lines.reduce((sum, line) => sum + line.quantity * line.cachedUnitPrice, 0);
 }

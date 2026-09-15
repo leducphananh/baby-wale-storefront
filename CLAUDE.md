@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S5 complete (Product Detail); next is S6 (NOT started)
+## 2. Current phase — S6 complete (Shopping Cart); next is S7 (NOT started)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -164,7 +164,40 @@ conflict, resolve per §3.
   to remove a real copy-drift risk. Verified with real screenshots (320/390/1440px)
   against real (temporarily visible, then reverted) in-stock and out-of-stock products.
   Zero new migration, zero `.from(...)`, zero `select('*')`.
-- **Next: S6** — Shopping Cart. **Not started.** Do not begin S6+ work until asked.
+- **S6** — Shopping Cart — **done**: `/gio-hang`, built entirely on the S5 Zustand
+  store (extended, not replaced) — added `incrementQuantity`/`decrementQuantity` (the
+  cart page's own quantity controls; `decrementQuantity` at quantity 1 **removes the
+  line**, a real business rule `setQuantity` alone can't express) and
+  `selectCartSubtotal` (`Σ(quantity × cachedUnitPrice)`, display-only). Added a
+  `persist` `merge` step that sanitizes whatever was actually in `localStorage`
+  (missing `productId` → dropped; invalid/negative/NaN/Infinity quantity or price →
+  coerced to a safe default; duplicate `productId`s → merged) — a customer can hand-
+  edit `localStorage` and the storefront must not crash on it. `CartItemRow` reuses
+  `QuantitySelector`, extended with two purely-additive, opt-in props
+  (`itemLabel` for per-product accessible names; `onDecrementBelowMin` for the
+  remove-at-1 rule) — every existing Product-Detail usage/test is byte-for-byte
+  unchanged. `Price` gained `treatZeroAsUnavailable={false}` for aggregate totals —
+  a cart/order subtotal must show a genuine "0 ₫", never "Liên hệ" (money.ts's own
+  documented product-price-vs-aggregate distinction, exercised for the first time
+  here). Totals use S2.4 §10.4's frozen terminology exactly — "Tạm tính (hàng hoá)",
+  "Phí vận chuyển: Nhân viên sẽ xác nhận", "Tổng tiền hàng" (never "Tổng thanh toán"
+  while shipping stays unresolved, CLAUDE.md §8) — which the phase's own brief
+  under-specified; followed the already-frozen contract over the newer prompt.
+  Mobile gets an unconditional sticky bottom Checkout bar (S2.4 §9.2's Cart row, no
+  scroll-trigger — unlike Product Detail's conditional one); desktop shows the same
+  CTA inline in a non-sticky summary panel (S2.4 never froze a sticky desktop cart
+  summary). "Tiến hành đặt hàng" only navigates to `/thanh-toan` (not built until
+  S8 — a graceful 404 today, the same pattern already used for `/gio-hang` before S6
+  and `/san-pham/[slug]` before S5) — **zero** checkout/order logic anywhere in this
+  phase. **Zero Supabase calls of any kind** — grep-confirmed no `.from(...)`,
+  `createClient`, or `supabase.rpc` anywhere in `src/features/cart/` or
+  `src/app/gio-hang/`; the phase brief's premise of a Supabase egress-quota problem
+  could not be verified from this repo (same pattern as S5's unverifiable egress
+  claim) and is moot for cart operations regardless, since none of them can reach
+  the network. Zero new dependency (zustand already existed since S5), zero new
+  migration. 151 tests total (40 new/changed this phase).
+- **Next: S7** — Storefront Order Backend Contract. **Not started.** Do not begin
+  S7+ work until asked.
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius
@@ -182,8 +215,9 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
 - Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
   and (later) validation. **No `service_role`, no TanStack Query, no RHF yet** — added
   in the phase that first needs them.
-- Cart state (added S5): `zustand` — `src/features/cart/store.ts`, client-only, display
-  state (`cart-state` skill). No `/gio-hang` page, no `/api/cart/revalidate` yet (S6).
+- Cart state (added S5, extended S6): `zustand` — `src/features/cart/store.ts`,
+  client-only, display state (`cart-state` skill). `/gio-hang` (S6) is the full cart
+  page; `/api/cart/revalidate` and checkout itself are still S7/S8.
 - Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
   `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
   `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
@@ -196,9 +230,9 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
   (generated Supabase types, regenerated independently of the admin repo — S0 C11),
   `src/components/ui/` (themed primitives), `src/components/layout/` +
   `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
-  public catalog data-access layer + DTOs), `src/features/cart/` (S5 client cart
-  store), `src/lib/content/` (shared customer-facing copy, e.g. trust-copy.ts),
-  `supabase/migrations/` (this repo's own
+  public catalog data-access layer + DTOs), `src/features/cart/` (client cart store,
+  S5; full `/gio-hang` UI, S6), `src/lib/content/` (shared customer-facing copy, e.g.
+  trust-copy.ts), `supabase/migrations/` (this repo's own
   record of what it applied to the **shared** project — see §2 S3 for the
   admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
   (aliases `server-only` to a test stub — see `src/test/stubs/server-only.ts`). Env:
@@ -437,8 +471,9 @@ S4    Catalog Browse / Homepage              ✅
 
 S5    Product Detail                          ✅
 
-S6    Shopping Cart  ← next
-S7    Storefront Order Backend Contract
+S6    Shopping Cart                           ✅
+
+S7    Storefront Order Backend Contract  ← next
 S8    Checkout
 S9    Order Success & Tracking
 S10   Admin Coordination
