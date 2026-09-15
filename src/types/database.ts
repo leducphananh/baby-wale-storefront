@@ -5,7 +5,10 @@
 // with the admin repo). Source: `supabase gen types typescript` equivalent
 // against project jtkmycvkthciiskwptqv, after the S3 migration
 // (`supabase/migrations/20260912120000_s3_public_catalog_contract.sql` +
-// follow-ups). Regenerate whenever the shared schema changes.
+// follow-ups) and the S7 migration
+// (`supabase/migrations/20260915120000_s7_storefront_order_backend_contract.sql`
+// + `20260915120500_s7_fix_stock_check_for_share_aggregate.sql`).
+// Regenerate whenever the shared schema changes.
 export type Json =
   | string
   | number
@@ -498,15 +501,24 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           customer_id: string | null
+          customer_name_snapshot: string | null
+          customer_phone_snapshot: string | null
           discount: number
           id: string
+          idempotency_key: string | null
           note: string | null
           order_date: string
           order_number: string
+          payment_method: string | null
           payment_status: string
+          recipient_name: string | null
+          shipping_address_snapshot: string | null
+          shipping_fee: number
+          source: string
           status: string
           subtotal: number
           total: number
+          tracking_token_hash: string | null
           updated_at: string | null
         }
         Insert: {
@@ -515,15 +527,24 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id?: string | null
+          customer_name_snapshot?: string | null
+          customer_phone_snapshot?: string | null
           discount?: number
           id?: string
+          idempotency_key?: string | null
           note?: string | null
           order_date?: string
           order_number: string
+          payment_method?: string | null
           payment_status?: string
+          recipient_name?: string | null
+          shipping_address_snapshot?: string | null
+          shipping_fee?: number
+          source?: string
           status?: string
           subtotal?: number
           total?: number
+          tracking_token_hash?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -532,15 +553,24 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           customer_id?: string | null
+          customer_name_snapshot?: string | null
+          customer_phone_snapshot?: string | null
           discount?: number
           id?: string
+          idempotency_key?: string | null
           note?: string | null
           order_date?: string
           order_number?: string
+          payment_method?: string | null
           payment_status?: string
+          recipient_name?: string | null
+          shipping_address_snapshot?: string | null
+          shipping_fee?: number
+          source?: string
           status?: string
           subtotal?: number
           total?: number
+          tracking_token_hash?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -1040,6 +1070,19 @@ export type Database = {
         Args: { p_customer_id: string; p_items: Json; p_note: string }
         Returns: Json
       }
+      create_storefront_order: {
+        Args: {
+          p_customer_email?: string
+          p_customer_name?: string
+          p_customer_phone?: string
+          p_idempotency_key?: string
+          p_items?: Json
+          p_note?: string
+          p_payment_method?: string
+          p_shipping_address?: string
+        }
+        Returns: Json
+      }
       delete_import_receipt_item: {
         Args: { p_item_id: string }
         Returns: undefined
@@ -1292,6 +1335,10 @@ export type Database = {
           no_sale_in_lookback_count: number
           no_sale_in_lookback_value: number
         }[]
+      }
+      get_storefront_order_by_token: {
+        Args: { p_token: string }
+        Returns: Json
       }
       get_storefront_product_by_slug: {
         Args: { p_slug: string }

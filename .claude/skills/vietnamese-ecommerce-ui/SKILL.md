@@ -30,9 +30,10 @@ numbers, or statuses on the storefront.
 6. **Phone**: Vietnamese mobile format, displayed grouped (`0912 345 678`); validated
    and stored canonical `0XXXXXXXXX` via the one shared normalization function
    (`react-hook-form-zod`).
-7. **Order status → customer label:**
+7. **Order status → customer label** (S2.4 §10.8 — authoritative over S0 Part E7's
+   wording for `completed`, which this table used to (incorrectly) repeat; fixed S7):
    - `draft` (website order) → **"Đơn mới – chờ xác nhận"**
-   - `completed` → **"Đã xử lý / hoàn tất"**
+   - `completed` → **"Đơn hàng đã được xác nhận"**
    - `cancelled` → **"Đã huỷ"**
 8. **Stock → customer label:** sellable > 0 → **"Còn hàng"**; sellable 0 → **"Hết
    hàng"**. No numbers, no "Sắp hết hàng" (deferred, and never from `minimum_stock`).

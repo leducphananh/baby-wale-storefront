@@ -13,7 +13,8 @@
 | [`storefront/S3-public-catalog-data-contract.md`](storefront/S3-public-catalog-data-contract.md) | **S3 output.** The storefront's first Supabase-touching phase: an additive migration on the **shared** project (`products.slug`/`categories.slug` + backfill, `products.is_web_visible` per locked O1, an admin-compat auto-slug trigger) and three new `SECURITY DEFINER` functions (`list_storefront_categories`, `list_storefront_products`, `get_storefront_product_by_slug`) implementing CLAUDE.md §5's RPC-only correction to S0 Part E — zero `anon` grant on any base table/view, ever. `in_stock` is a boolean using `complete_order()`'s own FEFO-safe predicate. Verified with real black-box PostgREST negative tests against the live database (not mocked). Documents two real issues found and fixed in-phase (a Supabase default-privilege grant leak; an admin-compatibility break) and an explicit Admin Coordination follow-up (mirroring the migration into the admin repo's tracked history). Typed data-access layer in `src/features/catalog/`. No catalog UI, no cart, no checkout, no order RPC. |
 | **S4 output** (no dedicated doc — this table row is its record) | Real customer-facing catalog browsing: `SiteHeader`/`SiteFooter` in the root layout, the homepage (hero → categories → "Sản phẩm mới" rail → S2.4 §15 trust copy), `/san-pham` (search-param category filter + pagination), the canonical `/danh-muc/[slug]` category page, and the `ProductCard`/`CategoryTile`/`StockBadge`/`Price`/`Pagination`/`ProductRail` primitives (S2.4 §10.1/§10.9). Consumes only the S3 RPCs. `selling_price = 0` renders "Liên hệ" (documented S4 rule, never "0 ₫"). No product image bucket yet, so every card shows the frozen missing-image placeholder; cart icon is visually present but not functional (S6) and product-card links target `/san-pham/[slug]` (S5, not built yet) — both documented, deliberate, graceful-404 states, not fake functionality. Verified with real screenshots against real (temporarily visible, then reverted) catalog data — found and fixed a real price/badge wrap bug from that render. No new dependency, no new migration. |
 | **S5 output** (no dedicated doc — this table row is its record) | `/san-pham/[slug]` Product Detail, sourced entirely from `get_storefront_product_by_slug` (S3) — the frozen S2.4 §10.3 hierarchy (breadcrumb → gallery → name/brand → price → stock → unit → quantity → Add-to-Cart → trust → description → specification → "Sản phẩm liên quan", reusing `list_storefront_products` filtered to the same category, no new RPC). Introduced the first client cart state (`zustand`, `src/features/cart/store.ts` — explicitly authorized by the S5 brief as "the minimum cart state infrastructure needed for the Product Detail CTA"), matching `cart-state`'s frozen line shape; `CartIndicator` now self-reads the live store. The sticky mobile Add-to-Cart bar uses a real `IntersectionObserver` so exactly one Add-to-Cart affordance is ever visible (S2.4 §9.2/§10.3). OOS: button stays visible, disabled, labelled "Hết hàng". Quantity has no inventory-backed max (S6/S7 enforce that). No product image field/bucket exists yet, so the gallery always shows the placeholder — zero Storage requests result; the S5 brief's premise of "recently identified elevated Supabase Storage Egress" was checked against this repo's history and could not be found, and is architecturally impossible today (no public bucket exists yet to generate egress from) — reported, not silently accepted. Extracted the trust copy (used 3× now) into `src/lib/content/trust-copy.ts`. Verified with real screenshots against real (temporarily visible, then reverted) in-stock and out-of-stock products. No new migration, zero `.from(...)`, zero `select('*')`. |
-| **S6 output** (no dedicated doc — this table row is its record) | `/gio-hang` — the full cart page, built entirely on the S5 Zustand store (extended, not replaced): `incrementQuantity`/`decrementQuantity` (decrementing from 1 removes the line — a real business rule `setQuantity` alone can't express) and `selectCartSubtotal`, plus a `persist` `merge` step that sanitizes malformed `localStorage` (missing `productId` dropped; invalid quantity/price coerced; duplicate `productId`s merged). `QuantitySelector` and `Price` each gained one small, additive, opt-in prop (`itemLabel`/`onDecrementBelowMin`; `treatZeroAsUnavailable`) — every existing Product Detail usage is unchanged. Totals use S2.4 §10.4's frozen terminology exactly ("Tạm tính (hàng hoá)" / "Phí vận chuyển: Nhân viên sẽ xác nhận" / "Tổng tiền hàng", never "Tổng thanh toán"). Mobile gets an unconditional sticky Checkout bar (S2.4 §9.2); desktop shows the same CTA inline, non-sticky. "Tiến hành đặt hàng" only navigates to `/thanh-toan` (not built until S8 — a graceful 404, same pattern as `/gio-hang` before S6). **Zero Supabase calls of any kind** — grep-confirmed no `.from(...)`/`createClient`/`supabase.rpc` anywhere in `src/features/cart/` or `src/app/gio-hang/`; the brief's premise of a Supabase egress-quota problem could not be verified from this repo (same pattern as S5) and is moot for cart operations regardless. No new dependency, no new migration. 151 tests total. |
+| **S6 output** (no dedicated doc — this table row is its record) | `/gio-hang` — the full cart page, built entirely on the S5 Zustand store (extended, not replaced): `incrementQuantity`/`decrementQuantity` (decrementing from 1 removes the line — a real business rule `setQuantity` alone can't express) and `selectCartSubtotal`, plus a `persist` `merge` step that sanitizes malformed `localStorage` (missing `productId` dropped; invalid quantity/price coerced; duplicate `productId`s merged). `QuantitySelector` and `Price` each gained one small, additive, opt-in prop (`itemLabel`/`onDecrementBelowMin`; `treatZeroAsUnavailable`) — every existing Product Detail usage is unchanged. Totals use S2.4 §10.4's frozen terminology exactly ("Tạm tính (hàng hoá)" / "Phí vận chuyển: Nhân viên sẽ xác nhận" / "Tổng tiền hàng", never "Tổng thanh toán"). Mobile gets an unconditional sticky Checkout bar (S2.4 §9.2); desktop shows the same CTA inline, non-sticky. "Tiến hành đặt hàng" only navigates to `/thanh-toan` (not built until S7 — a graceful 404, same pattern as `/gio-hang` before S6). **Zero Supabase calls of any kind** — grep-confirmed no `.from(...)`/`createClient`/`supabase.rpc` anywhere in `src/features/cart/` or `src/app/gio-hang/`; the brief's premise of a Supabase egress-quota problem could not be verified from this repo (same pattern as S5) and is moot for cart operations regardless. No new dependency, no new migration. 151 tests total. |
+| [`storefront/S7-storefront-checkout-and-order-backend-contract.md`](storefront/S7-storefront-checkout-and-order-backend-contract.md) | **S7 output.** The storefront's first **write** path: an additive migration (S0 F6–F11) adding nine columns to `orders` and two new `SECURITY DEFINER` functions, `create_storefront_order()` and `get_storefront_order_by_token()`. Inspecting the live `create_order()`/`complete_order()` bodies first found that `create_order()` auto-completes — the reason a genuinely separate, draft-only function was required, reusing only the `order_number` advisory-lock pattern and the FEFO-safe stock predicate verbatim. Every RLS policy on `orders`/`order_items`/`customers` is `TO authenticated` only (verified live) — `SECURITY DEFINER` is the only guest-write path. Real black-box testing against the live project covers the happy path, idempotent replay, every S0 E7 error code, a price-tampering attempt (ignored), and 401s on every direct-table access attempt. Found and fixed two real issues from that live testing (a `FOR SHARE`-with-aggregate SQL error; a `completed`-status label conflict between S0 and S2.4, resolved in S2.4's favor, same precedent as S6). Built `/thanh-toan` (RHF + Zod, `PaymentRow`, a `/api/cart/revalidate` price/stock pre-check reusing the S3 RPC, `/api/checkout` calling the new RPC) and `/dat-hang-thanh-cong` (S2.4 §10.7 — sessionStorage-held confirmation, never the URL). Discloses two known limitations: checkout uses the normal global header rather than S2.4's frozen "slim header," and no live screenshot exists of a populated-cart checkout form (same no-Puppeteer gap as S6, compensated by 50 new tests). Added `react-hook-form` + `@hookform/resolvers`. 201 tests total (50 new this phase). |
 
 ## Corrections to S0 recorded in CLAUDE.md and the skills
 
@@ -31,7 +32,49 @@
 
 ## Current phase
 
-**S6 complete — Shopping Cart.** `/gio-hang` is a full cart page built entirely on
+**S7 complete — Storefront Checkout + Storefront Order Backend Contract.**
+[`storefront/S7-storefront-checkout-and-order-backend-contract.md`](storefront/S7-storefront-checkout-and-order-backend-contract.md)
+is the storefront's first **write** path — everything before this phase was
+read-only. An additive migration (S0 Part F6–F11) added nine columns to `orders`
+(`source`, `customer_name_snapshot`/`customer_phone_snapshot`/
+`shipping_address_snapshot`, `recipient_name`, `shipping_fee`, `tracking_token_hash`,
+`idempotency_key`, `payment_method`) and two new `SECURITY DEFINER` functions:
+`create_storefront_order()` (server-priced from `products.selling_price`, never a
+client-submitted price; checks the same FEFO-safe sellable-stock predicate
+`complete_order()` uses, as a check not a reservation; idempotent on a client-
+generated `UNIQUE` key; inserts an order at `status='draft'`/`source='website'` and
+stops — never auto-completes, allocates stock, or becomes revenue) and
+`get_storefront_order_by_token()` (guest lookup by an unguessable, SHA-256-hashed
+token only, never `order_number` alone). Before writing any of it, the live bodies of
+`create_order`, `complete_order`, `cancel_order`, `update_order_draft`, and
+`record_order_payment` were read via `pg_get_functiondef` — finding that
+`create_order()` calls `complete_order()` immediately, which is exactly why it could
+not be reused for a storefront checkout that must never auto-complete. Verified with
+real black-box tests against the live project: the happy path, an idempotent replay,
+every S0 Part E7 error code, a price-tampering attempt from `anon` (silently ignored,
+the real price is always charged), and 401s on every direct `orders`/`customers`/
+`product_batches` access attempt. Found and fixed two real issues from that live
+testing (not code review): a `FOR SHARE`-with-aggregate SQL error in the stock check,
+and a `completed`-status customer label conflict between S0's wording and S2.4 §10.8's
+frozen one — resolved in S2.4's favor, the same precedent S6 already set for cart
+totals terminology. Built `/thanh-toan` (React Hook Form + Zod, a `PaymentRow` per
+S2.4 §10.6, a `/api/cart/revalidate` pre-submit price/stock check that reuses the
+existing S3 `get_storefront_product_by_slug` RPC rather than adding new backend
+surface, and `/api/checkout` calling the new RPC) and `/dat-hang-thanh-cong` (S2.4
+§10.7 — "ORDER RECEIVED" framing only, the confirmation held in `sessionStorage`,
+never the URL). Two limitations are disclosed rather than silently shipped: checkout
+renders inside the same global header every other route uses, not S2.4 §10.5's frozen
+"slim header" (a route-conditional header needs a root-layout restructure beyond this
+phase); and there is no live-browser screenshot of a populated-cart checkout form (the
+same no-Puppeteer/Playwright gap disclosed in S6), compensated by 50 new Vitest/RTL
+tests using real `user-event` typing/clicking/submitting (201 tests total). Added
+`react-hook-form` + `@hookform/resolvers` (S0 §10 explicitly authorizes RHF+Zod for
+checkout). **Next: S9 — Order Tracking** (the return-visit lookup page for
+`get_storefront_order_by_token()`, already built here). The roadmap's original S7
+"Order Backend Contract" and S8 "Checkout" were consolidated into this one delivered
+phase — see CLAUDE.md §11.
+
+Earlier: **S6 complete — Shopping Cart.** `/gio-hang` is a full cart page built entirely on
 the S5 Zustand store, extended rather than replaced: `incrementQuantity`/
 `decrementQuantity` (decrementing an item already at quantity 1 **removes the
 line** — a real business rule the pre-existing `setQuantity` couldn't express) and
@@ -129,7 +172,9 @@ republished as **v4** at S2.4 to remove the unapproved "Giao hàng toàn quốc"
 **S2.2** recommended Soft Trust Commerce; **S2.1** defined the IA, navigation, and all
 customer flows; **S1** delivered the Next.js 16 technical scaffold.
 
-Three additive database migrations to date (S3, `supabase/migrations/`), applied to
-the shared Supabase project — see `storefront/S3-public-catalog-data-contract.md`.
-Zero changes to the admin repo's files (the migration is not yet mirrored into
+Six additive database migrations to date (three from S3, three from S7,
+`supabase/migrations/`), applied to the shared Supabase project — see
+`storefront/S3-public-catalog-data-contract.md` and
+`storefront/S7-storefront-checkout-and-order-backend-contract.md`. Zero changes to the
+admin repo's files (neither S3's nor S7's migrations are yet mirrored into
 `baby-store-web/supabase/migrations/` — an open Admin Coordination follow-up).

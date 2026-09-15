@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S6 complete (Shopping Cart); next is S7 (NOT started)
+## 2. Current phase — S7 complete (Checkout + Order Backend Contract); next is S9 (Order Tracking, NOT started — see §11's roadmap note on the S7/S8/S9 consolidation)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -196,8 +196,51 @@ conflict, resolve per §3.
   claim) and is moot for cart operations regardless, since none of them can reach
   the network. Zero new dependency (zustand already existed since S5), zero new
   migration. 151 tests total (40 new/changed this phase).
-- **Next: S7** — Storefront Order Backend Contract. **Not started.** Do not begin
-  S7+ work until asked.
+- **S7** — Storefront Checkout + Storefront Order Backend Contract — **done**
+  (`docs/storefront/S7-storefront-checkout-and-order-backend-contract.md`): the
+  storefront's first **write** path. An additive migration (S0 F6–F11) added nine
+  columns to `orders` (`source`, `customer_name_snapshot`/`customer_phone_snapshot`/
+  `shipping_address_snapshot`, `recipient_name`, `shipping_fee`, `tracking_token_hash`,
+  `idempotency_key`, `payment_method`) and two new `SECURITY DEFINER` functions —
+  `create_storefront_order()` and `get_storefront_order_by_token()`. Inspected the
+  live `create_order()`/`complete_order()` bodies before writing anything: found that
+  `create_order()` auto-completes (calls `complete_order()` inline), which is exactly
+  why the storefront needed a genuinely separate function that stops at
+  `status = 'draft'`, `source = 'website'` and never allocates stock or becomes
+  revenue (CLAUDE.md §6, S0 O2) — reusing only the *patterns* (the `order_number`
+  advisory-lock generator, the FEFO-safe stock predicate) verbatim from the live code,
+  never re-derived. Every RLS policy on `orders`/`order_items`/`customers` is
+  `TO authenticated` only (verified live) — `SECURITY DEFINER` is the only guest-write
+  mechanism, not a convenience choice. Server always re-prices every line from
+  `products.selling_price`; a live black-box price-tampering test (`p_items[0].
+  unit_price: 1` sent by `anon`) confirmed it's silently ignored. Idempotent on a
+  client-generated key (`orders.idempotency_key UNIQUE`) — a replay or a genuine
+  concurrent double-submit both resolve to the original order's confirmation, never a
+  duplicate; the plaintext `tracking_token` (only its SHA-256 hash is ever persisted,
+  CLAUDE.md §6) cannot be re-shown on replay — a disclosed, deliberate limitation, not
+  silently glossed over. Full negative security suite re-run live (anon 401s on direct
+  `orders`/`customers`/`product_batches` access; an unknown/malformed tracking token
+  returns `null`, no existence leak). Found and fixed two real issues in-phase, both
+  from live testing, not code review: a `FOR SHARE`-with-aggregate SQL error the stock
+  check couldn't have hit under review alone, and a `completed`-status label
+  conflict between S0 Part E7's wording and S2.4 §10.8's frozen one (S2.4 wins, same
+  precedent as S6's totals terminology). Built `/thanh-toan` (RHF + Zod checkout form,
+  `PaymentRow` per S2.4 §10.6, a `/api/cart/revalidate` pre-submit price/stock check
+  reusing the existing S3 RPC, `/api/checkout` calling the new RPC) and
+  `/dat-hang-thanh-cong` (S2.4 §10.7 — "ORDER RECEIVED" framing only, a
+  `sessionStorage`-held confirmation, never the URL). Known, disclosed limitations:
+  checkout renders inside the normal global header rather than S2.4 §10.5's frozen
+  "slim header" (would require a root-layout restructure beyond this phase's scope);
+  `get_storefront_order_by_token()` has no consuming tracking page yet (S9); no live
+  screenshot of a populated-cart checkout form (same no-Puppeteer limitation as S6,
+  compensated by 50 new Vitest/RTL tests with real `user-event` interaction — 201
+  tests total, up from 151). Added `react-hook-form` + `@hookform/resolvers` (S0 §10
+  explicitly authorizes RHF+Zod for checkout). Zero payment gateway, zero customer
+  accounts, zero admin UI change, zero inventory-reservation subsystem.
+- **Next: S9** — Order Tracking (the return-visit lookup page for
+  `get_storefront_order_by_token()`, already built in S7). **Not started.** Do not
+  begin S9+ work until asked. (S7's brief consolidated the roadmap's original S7
+  "Order Backend Contract" + S8 "Checkout" into one phase — see §11.)
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius
@@ -213,11 +256,17 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
 - Package manager: **Yarn 1.22.22** (`yarn.lock`). Do not add a second lockfile.
 - Node **>= 20.9** (developed on 22.17).
 - Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
-  and (later) validation. **No `service_role`, no TanStack Query, no RHF yet** — added
-  in the phase that first needs them.
+  and (later) validation. **No `service_role`, ever.** No TanStack Query — still not
+  needed.
 - Cart state (added S5, extended S6): `zustand` — `src/features/cart/store.ts`,
   client-only, display state (`cart-state` skill). `/gio-hang` (S6) is the full cart
-  page; `/api/cart/revalidate` and checkout itself are still S7/S8.
+  page.
+- Checkout (added S7): `react-hook-form` + `@hookform/resolvers` (S0 §10 —
+  interactive-form validation only, client-side UX layer). `src/features/checkout/`
+  (schema, error-map, `/thanh-toan` components, order-success view),
+  `src/app/api/cart/revalidate/` + `src/app/api/checkout/` (Route Handlers —
+  server/RPC boundary, never a direct browser → Supabase write). `/thanh-toan` and
+  `/dat-hang-thanh-cong` are the full checkout + order-success pages.
 - Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
   `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
   `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
@@ -231,8 +280,10 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
   `src/components/ui/` (themed primitives), `src/components/layout/` +
   `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
   public catalog data-access layer + DTOs), `src/features/cart/` (client cart store,
-  S5; full `/gio-hang` UI, S6), `src/lib/content/` (shared customer-facing copy, e.g.
-  trust-copy.ts), `supabase/migrations/` (this repo's own
+  S5; full `/gio-hang` UI, S6), `src/features/checkout/` (S7 — schema/error-map/DTOs,
+  `/thanh-toan` + order-success components), `src/app/api/cart/revalidate/` +
+  `src/app/api/checkout/` (S7 Route Handlers), `src/lib/content/` (shared
+  customer-facing copy, e.g. trust-copy.ts), `supabase/migrations/` (this repo's own
   record of what it applied to the **shared** project — see §2 S3 for the
   admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
   (aliases `server-only` to a test stub — see `src/test/stubs/server-only.ts`). Env:
@@ -473,9 +524,12 @@ S5    Product Detail                          ✅
 
 S6    Shopping Cart                           ✅
 
-S7    Storefront Order Backend Contract  ← next
-S8    Checkout
-S9    Order Success & Tracking
+S7    Storefront Checkout + Order Backend Contract ✅
+      (consolidates the roadmap's original S7 "Order Backend Contract" and
+      S8 "Checkout" into one delivered phase, plus the Order Success page
+      portion of S9 — see CLAUDE.md §2 and the S7 completion doc)
+S9    Order Tracking (return-visit lookup page, `get_storefront_order_by_token`
+      already built in S7 — only the consuming page is left)  ← next
 S10   Admin Coordination
 S11   Online Payment
 S12   Customer Account / RBAC
@@ -569,3 +623,13 @@ before writing code in its area.
 **Testing:** `testing-nextjs-storefront`.
 **Quality:** `typescript`, `clean-code`, `code-review`.
 **Vietnamese commerce:** `vietnamese-ecommerce-ui`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
