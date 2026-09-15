@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S7 complete (Checkout + Order Backend Contract); next is S9 (Order Tracking, NOT started — see §11's roadmap note on the S7/S8/S9 consolidation)
+## 2. Current phase — S8 complete (Order Success & Order Tracking); next is Admin Coordination (NOT started — see §11's roadmap note on renumbering)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -237,10 +237,51 @@ conflict, resolve per §3.
   tests total, up from 151). Added `react-hook-form` + `@hookform/resolvers` (S0 §10
   explicitly authorizes RHF+Zod for checkout). Zero payment gateway, zero customer
   accounts, zero admin UI change, zero inventory-reservation subsystem.
-- **Next: S9** — Order Tracking (the return-visit lookup page for
-  `get_storefront_order_by_token()`, already built in S7). **Not started.** Do not
-  begin S9+ work until asked. (S7's brief consolidated the roadmap's original S7
-  "Order Backend Contract" + S8 "Checkout" into one phase — see §11.)
+- **S8** — Order Success & Order Tracking — **done**
+  (`docs/storefront/S8-order-success-and-tracking.md`): completes the customer-facing
+  lifecycle after S7's checkout, with **zero database schema change** —
+  `get_storefront_order_by_token()` (S7) was already safe and sufficient and is
+  consumed as-is. Re-reading `docs/design/S2.1-information-architecture-and-user-
+  flows.md` §11–§12 (not assumed from S7's own report) confirmed tracking is
+  token-only (a raw token or a pasted tracking URL — never `order_number` + phone,
+  which S0 B13 explicitly rejects as an enumeration risk) and independently
+  reconfirmed the `completed` → "Đơn hàng đã được xác nhận" label S7's fix migration
+  already chose. Added exactly one new server endpoint, `/api/orders/lookup` (POST
+  `{token}`), which always returns `{order: null}` for a malformed, empty, *or*
+  unknown token — the identical shape in every case, so a lookup attempt can never
+  distinguish "bad input" from "no such order" (S2.1 §11.2). Built a shared
+  `OrderDetailView` (order number, the already-mapped status label, payment method +
+  a method-specific helper — **never** a paid/unpaid badge, S2.1 §12.2 — historical
+  item prices from the order itself, never re-fetched from `products.selling_price`,
+  and the frozen three-line totals format) reused by both the enriched success page
+  and the new `/tra-cuu-don-hang` tracking page, matching S2.1 §11.2's "same read-only
+  order view" requirement. `OrderSuccessView` now makes exactly one additional lookup
+  call (using the tracking token it just received) to render that full view instead
+  of the S7 minimal confirmation alone — falling back to the minimal view if that
+  token is unavailable (an idempotent replay) or the lookup fails, a disclosed
+  limitation, not a crash. Fixed a real S7 bug in passing: the copied tracking link
+  pointed at a placeholder path (`/don-hang/theo-doi`) that never existed; it now
+  points at the real `/tra-cuu-don-hang?token=...`. Wired the header's already-built-
+  but-unwired `trackOrder` slot, the mobile hamburger drawer, and the footer with
+  real `/tra-cuu-don-hang` links (S2.1 §5). CTA hierarchy on the success page follows
+  S2.4 §10.7 / S2.1 §11.1 exactly (primary: copy tracking link; secondary: continue
+  shopping) over the S8 brief's own restated example, which inverted it — the same
+  "frozen design doc wins" precedent as S6/S7. Real end-to-end verification against
+  the live database (one temporary test order created, looked up three ways —
+  raw token, a URL-wrapped token, and a bogus token — through the actual `/api/orders/
+  lookup` route, then cleaned up) plus 236 passing tests (35 new). Repo-wide grep
+  confirmed zero `service_role`, zero `select('*')`, zero direct `.from(...)` table
+  access anywhere in the new code — the RPC call is the only Supabase touchpoint.
+  Known, disclosed limitations: no live screenshot of the tracking page's *async*
+  found/not-found result (same no-Puppeteer gap as S5–S7, compensated by a real
+  live-server curl verification and the new tests); no rate limiting (S12/S13, token
+  entropy — 192 bits — makes brute-forcing impractical today); the S7 idempotent-
+  replay token-loss and normal-header-instead-of-slim-header limitations are
+  unchanged (S8 did not touch either, per its own explicit instructions not to).
+- **Next: Admin Coordination** (mirroring the S3 and S7 migrations into
+  `baby-store-web/supabase/migrations/`, still not done in either phase) or **Online
+  Payment**, whichever the user prioritizes. **Not started.** Do not begin further
+  work until asked.
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius
@@ -261,12 +302,14 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
 - Cart state (added S5, extended S6): `zustand` — `src/features/cart/store.ts`,
   client-only, display state (`cart-state` skill). `/gio-hang` (S6) is the full cart
   page.
-- Checkout (added S7): `react-hook-form` + `@hookform/resolvers` (S0 §10 —
-  interactive-form validation only, client-side UX layer). `src/features/checkout/`
-  (schema, error-map, `/thanh-toan` components, order-success view),
-  `src/app/api/cart/revalidate/` + `src/app/api/checkout/` (Route Handlers —
-  server/RPC boundary, never a direct browser → Supabase write). `/thanh-toan` and
-  `/dat-hang-thanh-cong` are the full checkout + order-success pages.
+- Checkout (added S7, extended S8): `react-hook-form` + `@hookform/resolvers` (S0 §10
+  — interactive-form validation only, client-side UX layer). `src/features/checkout/`
+  (schema, error-map, tracking helpers, `/thanh-toan` + order-success + tracking
+  components — incl. the shared read-only `OrderDetailView`), `src/app/api/cart/
+  revalidate/` + `src/app/api/checkout/` + `src/app/api/orders/lookup/` (S8) (Route
+  Handlers — server/RPC boundary, never a direct browser → Supabase write).
+  `/thanh-toan`, `/dat-hang-thanh-cong`, and `/tra-cuu-don-hang` (S8) are the full
+  checkout + order-success + order-tracking pages.
 - Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
   `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
   `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
@@ -280,9 +323,10 @@ issue found during implementation is raised as a **Design Deviation Proposal** (
   `src/components/ui/` (themed primitives), `src/components/layout/` +
   `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
   public catalog data-access layer + DTOs), `src/features/cart/` (client cart store,
-  S5; full `/gio-hang` UI, S6), `src/features/checkout/` (S7 — schema/error-map/DTOs,
-  `/thanh-toan` + order-success components), `src/app/api/cart/revalidate/` +
-  `src/app/api/checkout/` (S7 Route Handlers), `src/lib/content/` (shared
+  S5; full `/gio-hang` UI, S6), `src/features/checkout/` (S7 — schema/error-map/DTOs;
+  S8 — tracking helpers/`OrderDetailView`; `/thanh-toan` + order-success + tracking
+  components), `src/app/api/cart/revalidate/` + `src/app/api/checkout/` (S7) +
+  `src/app/api/orders/lookup/` (S8) (Route Handlers), `src/lib/content/` (shared
   customer-facing copy, e.g. trust-copy.ts), `supabase/migrations/` (this repo's own
   record of what it applied to the **shared** project — see §2 S3 for the
   admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
@@ -526,15 +570,22 @@ S6    Shopping Cart                           ✅
 
 S7    Storefront Checkout + Order Backend Contract ✅
       (consolidates the roadmap's original S7 "Order Backend Contract" and
-      S8 "Checkout" into one delivered phase, plus the Order Success page
-      portion of S9 — see CLAUDE.md §2 and the S7 completion doc)
-S9    Order Tracking (return-visit lookup page, `get_storefront_order_by_token`
-      already built in S7 — only the consuming page is left)  ← next
-S10   Admin Coordination
-S11   Online Payment
-S12   Customer Account / RBAC
-S13   SEO, Security, Testing & Production Hardening
+      S8 "Checkout" into one delivered phase — see CLAUDE.md §2 and the S7
+      completion doc)
+S8    Order Success & Order Tracking ✅
+      (the roadmap's original S9 content, delivered under the label "S8" —
+      see CLAUDE.md §2 and the S8 completion doc; zero DB change, reuses
+      S7's get_storefront_order_by_token() as-is)
+
+Admin Coordination   ← next (mirror the S3 + S7 migrations into baby-store-web)
+Online Payment
+Customer Account / RBAC
+SEO, Security, Testing & Production Hardening
 ```
+
+The remaining roadmap items are intentionally unnumbered here rather than force-fit
+into the original S9–S13 slots, which this phase's own renumbering has already
+diverged from — pick whichever the user prioritizes next.
 
 No feature UI implementation beyond project foundation begins before the **S2 design
 approval gate** where relevant.

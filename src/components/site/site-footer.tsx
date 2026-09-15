@@ -26,6 +26,9 @@ function SiteFooter() {
           <Link href="/san-pham" className="text-body-sm text-text-muted hover:text-primary">
             Sản phẩm
           </Link>
+          <Link href="/tra-cuu-don-hang" className="text-body-sm text-text-muted hover:text-primary">
+            Tra cứu đơn hàng
+          </Link>
         </div>
 
         <div className="flex flex-col gap-2">

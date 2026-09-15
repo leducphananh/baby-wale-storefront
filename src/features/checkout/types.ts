@@ -75,3 +75,44 @@ export interface StorefrontOrderConfirmation {
   status: string;
   created_at: string;
 }
+
+/**
+ * One historical order line, exactly as `get_storefront_order_by_token()`
+ * returns it (S8) — `unitPrice`/`lineTotal` are the order's own snapshot
+ * values (`order_items.unit_price`/`line_total`), **never** re-derived from
+ * the current `products.selling_price` (S8 §10 — tracking is a historical
+ * view).
+ */
+export interface OrderDetailItem {
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+/**
+ * The safe, read-only order view shared by the success page and the
+ * tracking result (S2.1 §11.2: "renders the same read-only order view as
+ * the success page"). `status` is already the customer-facing Vietnamese
+ * label (S2.4 §10.8 / S2.1 §12.1, locked) — the RPC maps it, the frontend
+ * never re-maps a raw enum. Deliberately excludes `paymentStatus` (S2.1
+ * §12.2: never a paid/unpaid badge on success/tracking) and the
+ * `customerNameSnapshot`/`customerPhoneSnapshot`/`shippingAddressSnapshot`
+ * fields the RPC also returns (S8 §23 — minimum necessary customer data;
+ * the order recipient already knows their own contact details).
+ */
+export interface OrderDetail {
+  orderNumber: string;
+  status: string;
+  paymentMethod: PaymentMethod;
+  createdAt: string;
+  subtotal: number;
+  shippingFee: number;
+  total: number;
+  items: OrderDetailItem[];
+  note: string | null;
+}
+
+export interface OrderLookupResponse {
+  order: OrderDetail | null;
+}

@@ -15,6 +15,7 @@
 | **S5 output** (no dedicated doc — this table row is its record) | `/san-pham/[slug]` Product Detail, sourced entirely from `get_storefront_product_by_slug` (S3) — the frozen S2.4 §10.3 hierarchy (breadcrumb → gallery → name/brand → price → stock → unit → quantity → Add-to-Cart → trust → description → specification → "Sản phẩm liên quan", reusing `list_storefront_products` filtered to the same category, no new RPC). Introduced the first client cart state (`zustand`, `src/features/cart/store.ts` — explicitly authorized by the S5 brief as "the minimum cart state infrastructure needed for the Product Detail CTA"), matching `cart-state`'s frozen line shape; `CartIndicator` now self-reads the live store. The sticky mobile Add-to-Cart bar uses a real `IntersectionObserver` so exactly one Add-to-Cart affordance is ever visible (S2.4 §9.2/§10.3). OOS: button stays visible, disabled, labelled "Hết hàng". Quantity has no inventory-backed max (S6/S7 enforce that). No product image field/bucket exists yet, so the gallery always shows the placeholder — zero Storage requests result; the S5 brief's premise of "recently identified elevated Supabase Storage Egress" was checked against this repo's history and could not be found, and is architecturally impossible today (no public bucket exists yet to generate egress from) — reported, not silently accepted. Extracted the trust copy (used 3× now) into `src/lib/content/trust-copy.ts`. Verified with real screenshots against real (temporarily visible, then reverted) in-stock and out-of-stock products. No new migration, zero `.from(...)`, zero `select('*')`. |
 | **S6 output** (no dedicated doc — this table row is its record) | `/gio-hang` — the full cart page, built entirely on the S5 Zustand store (extended, not replaced): `incrementQuantity`/`decrementQuantity` (decrementing from 1 removes the line — a real business rule `setQuantity` alone can't express) and `selectCartSubtotal`, plus a `persist` `merge` step that sanitizes malformed `localStorage` (missing `productId` dropped; invalid quantity/price coerced; duplicate `productId`s merged). `QuantitySelector` and `Price` each gained one small, additive, opt-in prop (`itemLabel`/`onDecrementBelowMin`; `treatZeroAsUnavailable`) — every existing Product Detail usage is unchanged. Totals use S2.4 §10.4's frozen terminology exactly ("Tạm tính (hàng hoá)" / "Phí vận chuyển: Nhân viên sẽ xác nhận" / "Tổng tiền hàng", never "Tổng thanh toán"). Mobile gets an unconditional sticky Checkout bar (S2.4 §9.2); desktop shows the same CTA inline, non-sticky. "Tiến hành đặt hàng" only navigates to `/thanh-toan` (not built until S7 — a graceful 404, same pattern as `/gio-hang` before S6). **Zero Supabase calls of any kind** — grep-confirmed no `.from(...)`/`createClient`/`supabase.rpc` anywhere in `src/features/cart/` or `src/app/gio-hang/`; the brief's premise of a Supabase egress-quota problem could not be verified from this repo (same pattern as S5) and is moot for cart operations regardless. No new dependency, no new migration. 151 tests total. |
 | [`storefront/S7-storefront-checkout-and-order-backend-contract.md`](storefront/S7-storefront-checkout-and-order-backend-contract.md) | **S7 output.** The storefront's first **write** path: an additive migration (S0 F6–F11) adding nine columns to `orders` and two new `SECURITY DEFINER` functions, `create_storefront_order()` and `get_storefront_order_by_token()`. Inspecting the live `create_order()`/`complete_order()` bodies first found that `create_order()` auto-completes — the reason a genuinely separate, draft-only function was required, reusing only the `order_number` advisory-lock pattern and the FEFO-safe stock predicate verbatim. Every RLS policy on `orders`/`order_items`/`customers` is `TO authenticated` only (verified live) — `SECURITY DEFINER` is the only guest-write path. Real black-box testing against the live project covers the happy path, idempotent replay, every S0 E7 error code, a price-tampering attempt (ignored), and 401s on every direct-table access attempt. Found and fixed two real issues from that live testing (a `FOR SHARE`-with-aggregate SQL error; a `completed`-status label conflict between S0 and S2.4, resolved in S2.4's favor, same precedent as S6). Built `/thanh-toan` (RHF + Zod, `PaymentRow`, a `/api/cart/revalidate` price/stock pre-check reusing the S3 RPC, `/api/checkout` calling the new RPC) and `/dat-hang-thanh-cong` (S2.4 §10.7 — sessionStorage-held confirmation, never the URL). Discloses two known limitations: checkout uses the normal global header rather than S2.4's frozen "slim header," and no live screenshot exists of a populated-cart checkout form (same no-Puppeteer gap as S6, compensated by 50 new tests). Added `react-hook-form` + `@hookform/resolvers`. 201 tests total (50 new this phase). |
+| [`storefront/S8-order-success-and-tracking.md`](storefront/S8-order-success-and-tracking.md) | **S8 output.** Completes the post-checkout customer lifecycle — **zero database change**, `get_storefront_order_by_token()` (S7) reused as-is. Re-reading S2.1 §11–§12 (not assumed from S7's own report) confirmed tracking is token-only (never `order_number` + phone, S0 B13) and independently reconfirmed S7's `completed`-status label choice. Added one new endpoint, `/api/orders/lookup`, which returns the identical `{order: null}` shape for a malformed *or* unknown token (never distinguishable, S2.1 §11.2 — avoids probing). Built a shared `OrderDetailView` (status, payment method + helper — never a paid/unpaid badge — historical item prices, the frozen three-line totals) reused by both the enriched success page (now one additional lookup call richer, S2.1 §11.1's "same read-only order view") and the new `/tra-cuu-don-hang` tracking page. Fixed a real S7 bug: the success page's copied tracking link pointed at a placeholder path that never existed; it now points at the real tracking page. Wired the header's already-built-but-unwired `trackOrder` slot, the mobile drawer, and the footer with real tracking links. Verified with a real end-to-end live-database test (one temporary order, looked up three ways through the real route, then cleaned up) and 236 passing tests (35 new). Known limitations: no live screenshot of the tracking page's *async* result (same no-Puppeteer gap as S5–S7); no rate limiting (deferred, token entropy makes brute-forcing impractical today); S7's idempotent-replay and slim-header limitations are unchanged. |
 
 ## Corrections to S0 recorded in CLAUDE.md and the skills
 
@@ -32,7 +33,47 @@
 
 ## Current phase
 
-**S7 complete — Storefront Checkout + Storefront Order Backend Contract.**
+**S8 complete — Order Success & Order Tracking.**
+[`storefront/S8-order-success-and-tracking.md`](storefront/S8-order-success-and-tracking.md)
+completes the post-checkout customer lifecycle with **zero database schema change** —
+`get_storefront_order_by_token()`, built in S7, was already safe and sufficient and is
+consumed as-is. Re-reading `docs/design/S2.1-information-architecture-and-user-
+flows.md` §11–§12 directly (rather than assuming the contract from S7's own
+completion report) confirmed two things: tracking is token-only — one field accepting
+a raw token or a pasted tracking URL, never an `order_number` + phone fallback, which
+S0 B13 explicitly rejects as an order-enumeration risk — and the `completed`-status
+label S7's fix migration already chose ("Đơn hàng đã được xác nhận") independently
+matches S2.1 §12.1's own locked decision. The only new backend-touching code is one
+Route Handler, `/api/orders/lookup`, which always returns the identical `{order:
+null}` shape for a malformed input *or* an unknown token — genuinely indistinguishable
+from each other, so a lookup attempt can never probe whether a given token almost
+matched something real (S2.1 §11.2). A shared `OrderDetailView` component (order
+number, the already-mapped status label, payment method plus a method-specific helper
+— never a paid/unpaid badge, S2.1 §12.2 — historical item prices read straight from
+the order itself rather than re-fetched from the current catalog, and the frozen
+three-line totals format) is reused by both the order-success page and the new
+`/tra-cuu-don-hang` tracking page, matching S2.1 §11.2's requirement that both render
+"the same read-only order view." The success page now makes exactly one additional
+lookup call — using the tracking token it just received — to render that fuller view
+instead of S7's minimal confirmation alone, falling back to the minimal view if that
+token is unavailable (an idempotent replay) or the call fails. A real bug from S7 was
+fixed in passing: the copied tracking link pointed at a placeholder path that never
+existed; it now points at the real tracking page. The header's `trackOrder` slot
+(built in S2.5, explicitly left unwired because "that route is S8") is now wired,
+alongside a mobile-drawer entry and a footer link. Verified with a real end-to-end
+test against the live database (one temporary order created, looked up three
+different ways — a raw token, a URL-wrapped token, and a bogus token — through the
+actual deployed route, then cleaned up) and 236 passing tests (35 new). Two
+limitations are disclosed rather than silently glossed over: no live screenshot of the
+tracking page's *asynchronous* found/not-found result (the same no-Puppeteer/
+Playwright gap already disclosed in S5–S7, compensated here by the live end-to-end
+curl verification and the new tests), and no rate limiting yet (the token's 192 bits
+of entropy make brute-forcing impractical today, but a dedicated hardening pass is
+still a real future item). **Next: Admin Coordination** (mirroring the S3 and S7
+migrations into the admin repo, still open) or **Online Payment**, whichever the user
+prioritizes.
+
+Earlier: **S7 complete — Storefront Checkout + Storefront Order Backend Contract.**
 [`storefront/S7-storefront-checkout-and-order-backend-contract.md`](storefront/S7-storefront-checkout-and-order-backend-contract.md)
 is the storefront's first **write** path — everything before this phase was
 read-only. An additive migration (S0 Part F6–F11) added nine columns to `orders`

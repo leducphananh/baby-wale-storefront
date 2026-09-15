@@ -38,8 +38,10 @@ import { listStorefrontCategories } from "@/features/catalog/server/list-categor
  *   reflects whatever "Thêm vào giỏ" has actually added. Links to
  *   `/gio-hang`, which doesn't exist until S6; visiting it lands on the
  *   existing, calm `not-found.tsx` — honest ("doesn't exist yet"), not fake.
- * - **"Tra cứu đơn hàng"**: omitted (optional slot) — that route is S8,
- *   further out than cart; not worth a 404 link yet.
+ * - **"Tra cứu đơn hàng"**: wired (S8) — a quiet desktop `trackOrder` link
+ *   plus a mobile hamburger-drawer entry, both pointing at
+ *   `/tra-cuu-don-hang` (S2.1 §5: footer + hamburger + a de-emphasized
+ *   header link, never a prominent header CTA).
  */
 async function SiteHeader() {
   const categories = await listStorefrontCategories();
@@ -97,6 +99,15 @@ async function SiteHeader() {
     </nav>
   );
 
+  const trackOrder = (
+    <Link
+      href="/tra-cuu-don-hang"
+      className="text-body-sm text-text-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      Tra cứu đơn hàng
+    </Link>
+  );
+
   const menuTrigger = (
     <Sheet>
       <SheetTrigger
@@ -139,12 +150,31 @@ async function SiteHeader() {
               </SheetClose>
             </li>
           ))}
+          <li>
+            <SheetClose asChild>
+              <Link
+                href="/tra-cuu-don-hang"
+                className="block rounded-sm px-2 py-3 text-body text-text hover:bg-surface-subtle"
+              >
+                Tra cứu đơn hàng
+              </Link>
+            </SheetClose>
+          </li>
         </ul>
       </SheetContent>
     </Sheet>
   );
 
-  return <Header logo={logo} search={search} nav={nav} menuTrigger={menuTrigger} cartHref="/gio-hang" />;
+  return (
+    <Header
+      logo={logo}
+      search={search}
+      nav={nav}
+      menuTrigger={menuTrigger}
+      trackOrder={trackOrder}
+      cartHref="/gio-hang"
+    />
+  );
 }
 
 export { SiteHeader };
