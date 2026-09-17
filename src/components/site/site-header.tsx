@@ -1,7 +1,9 @@
 import * as React from "react";
 
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import Link from "next/link";
+
+import { createClient } from "@/lib/supabase/server";
 
 import { Header } from "@/components/site/header";
 import { Input } from "@/components/ui/input";
@@ -45,6 +47,8 @@ import { listStorefrontCategories } from "@/features/catalog/server/list-categor
  */
 async function SiteHeader() {
   const categories = await listStorefrontCategories();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Text wordmark — no Baby Wale logo asset exists in this repo yet
   // (CLAUDE.md §15: reuse the real asset, never fabricate one).
@@ -105,6 +109,16 @@ async function SiteHeader() {
       className="text-body-sm text-text-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       Tra cứu đơn hàng
+    </Link>
+  );
+
+  const account = (
+    <Link
+      href={user ? "/tai-khoan" : "/dang-nhap"}
+      className="inline-flex size-11 items-center justify-center rounded-full text-text hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      aria-label="Tài khoản"
+    >
+      <User className="size-6" aria-hidden="true" />
     </Link>
   );
 
@@ -172,6 +186,7 @@ async function SiteHeader() {
       nav={nav}
       menuTrigger={menuTrigger}
       trackOrder={trackOrder}
+      account={account}
       cartHref="/gio-hang"
     />
   );

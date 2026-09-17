@@ -26,9 +26,11 @@ export interface HeaderProps {
   nav?: React.ReactNode;
   /** Desktop quiet "Tra cứu đơn hàng" link slot. */
   trackOrder?: React.ReactNode;
+  /** User account or login link */
+  account?: React.ReactNode;
 }
 
-function Header({ logo, search, cartHref, cartCount, menuTrigger, nav, trackOrder }: HeaderProps) {
+function Header({ logo, search, cartHref, cartCount, menuTrigger, nav, trackOrder, account }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface">
       {/* Mobile (< lg): 56px top row + 48px search row = 104px */}
@@ -38,7 +40,10 @@ function Header({ logo, search, cartHref, cartCount, menuTrigger, nav, trackOrde
             {menuTrigger}
             {logo}
           </div>
-          <CartIndicator href={cartHref} count={cartCount} />
+          <div className="flex items-center gap-3">
+            {account}
+            <CartIndicator href={cartHref} count={cartCount} />
+          </div>
         </Container>
         <Container className="flex h-12 items-center">{search}</Container>
       </div>
@@ -49,7 +54,10 @@ function Header({ logo, search, cartHref, cartCount, menuTrigger, nav, trackOrde
         {nav}
         <div className="flex-1">{search}</div>
         {trackOrder}
-        <CartIndicator href={cartHref} count={cartCount} />
+        <div className="flex items-center gap-4">
+          {account}
+          <CartIndicator href={cartHref} count={cartCount} />
+        </div>
       </Container>
     </header>
   );
