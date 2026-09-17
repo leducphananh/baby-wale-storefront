@@ -4,7 +4,7 @@
  * (S7, `docs/S0-requirements-and-architecture.md` Part E4/E5/E7).
  */
 
-export type PaymentMethod = "cod" | "bank_transfer";
+export type PaymentMethod = "cod" | "bank_transfer" | "vnpay";
 
 /** What the client ever submits for a line — never a price (`checkout-security`). */
 export interface CheckoutLineInput {

@@ -30,19 +30,20 @@ import { Button } from "@/components/ui/button";
  */
 export interface CartSummaryProps {
   subtotal: number;
+  selectedCount: number;
   /** Renders the CTA — omit on the mobile sticky bar, which supplies its own. */
   showCta?: boolean;
   className?: string;
 }
 
-function CartSummary({ subtotal, showCta = true, className }: CartSummaryProps) {
+function CartSummary({ subtotal, selectedCount, showCta = true, className }: CartSummaryProps) {
   return (
     <div className={className}>
       <h2 className="text-h3 text-text">Tóm tắt đơn hàng</h2>
 
       <div className="mt-4 flex flex-col gap-2" aria-live="polite">
         <div className="flex items-center justify-between">
-          <span className="text-body-sm text-text-muted">Tạm tính (hàng hoá)</span>
+          <span className="text-body-sm text-text-muted">Tạm tính ({selectedCount} sản phẩm)</span>
           <Price amount={subtotal} role="card" treatZeroAsUnavailable={false} />
         </div>
         <p className="text-caption text-text-muted">Phí vận chuyển: Nhân viên sẽ xác nhận</p>
@@ -56,9 +57,15 @@ function CartSummary({ subtotal, showCta = true, className }: CartSummaryProps) 
       </div>
 
       {showCta ? (
-        <Button asChild size="lg" className="mt-4 w-full">
-          <Link href="/thanh-toan">Tiến hành đặt hàng</Link>
-        </Button>
+        selectedCount === 0 ? (
+          <Button size="lg" className="mt-4 w-full" disabled>
+            Tiến hành đặt hàng
+          </Button>
+        ) : (
+          <Button asChild size="lg" className="mt-4 w-full">
+            <Link href="/thanh-toan">Tiến hành đặt hàng</Link>
+          </Button>
+        )
       ) : null}
     </div>
   );

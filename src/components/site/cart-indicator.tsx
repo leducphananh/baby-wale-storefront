@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-
+import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 
 import { selectCartCount, useCartStore } from "@/features/cart/store";
@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
  * (`useHasHydrated`): it renders "0 / no badge" until mounted, then the real
  * count, never mismatching the server-rendered markup.
  */
-export interface CartIndicatorProps extends React.ComponentPropsWithoutRef<"a"> {
+export interface CartIndicatorProps extends React.ComponentPropsWithoutRef<typeof Link> {
   count?: number;
 }
 
@@ -32,7 +32,7 @@ const CartIndicator = React.forwardRef<HTMLAnchorElement, CartIndicatorProps>(
     const count = explicitCount ?? (hasHydrated ? liveCount : 0);
 
     return (
-      <a
+      <Link
         ref={ref}
         className={cn(
           "sm-target relative inline-flex size-11 items-center justify-center rounded-sm text-text",
@@ -51,7 +51,7 @@ const CartIndicator = React.forwardRef<HTMLAnchorElement, CartIndicatorProps>(
             {count > 99 ? "99+" : count}
           </span>
         ) : null}
-      </a>
+      </Link>
     );
   },
 );

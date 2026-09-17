@@ -64,9 +64,14 @@ function formatIssuePrice(amount: number | null): string {
 function CheckoutView() {
   const router = useRouter();
   const hasHydrated = useHasHydrated();
-  const lines = useCartStore((state) => state.lines);
+  const allLines = useCartStore((state) => state.lines);
+  const selectedProductIds = useCartStore((state) => state.selectedProductIds);
+  const lines = React.useMemo(() => {
+    const selectedSet = new Set(selectedProductIds);
+    return allLines.filter((line) => selectedSet.has(line.productId));
+  }, [allLines, selectedProductIds]);
   const subtotal = useCartStore(selectCartSubtotal);
-  const clearCart = useCartStore((state) => state.clear);
+  const clearSelected = useCartStore((state) => state.clearSelected);
 
   const idempotencyKeyRef = React.useRef<string>(crypto.randomUUID());
 
@@ -93,6 +98,15 @@ function CheckoutView() {
       });
       if (!response.ok) return null;
       const result = (await response.json()) as RevalidateResponse;
+
+      const priceUpdates = result.items
+        .filter((item) => item.status === "price_changed" && typeof item.currentPrice === "number")
+        .map((item) => ({ productId: item.productId, newPrice: item.currentPrice as number }));
+
+      if (priceUpdates.length > 0) {
+        useCartStore.getState().updateLinePrices(priceUpdates);
+      }
+
       setIssues(result.items.filter((item) => item.status !== "ok"));
       return result;
     } catch {
@@ -146,6 +160,7 @@ function CheckoutView() {
       }
 
       const confirmation = (body as { order: StorefrontOrderConfirmation }).order;
+      const paymentUrl = (body as { paymentUrl?: string }).paymentUrl;
       try {
         sessionStorage.setItem(LAST_ORDER_SESSION_KEY, JSON.stringify(confirmation));
       } catch {
@@ -155,8 +170,13 @@ function CheckoutView() {
       }
       // Clear only after the RPC returned a committed confirmation
       // (cart-state rule 8 / checkout-security rule 8).
-      clearCart();
-      router.push("/dat-hang-thanh-cong");
+      clearSelected();
+      
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
+      } else {
+        router.push("/dat-hang-thanh-cong");
+      }
     } catch {
       setSubmitError({ code: "ORDER_CREATE_FAILED", message: "Không thể tạo đơn hàng. Vui lòng thử lại." });
     } finally {
@@ -177,11 +197,11 @@ function CheckoutView() {
     return (
       <EmptyState
         icon={<ShoppingBag className="size-8" strokeWidth={1.5} />}
-        title="Giỏ hàng đang trống"
-        description="Hãy thêm sản phẩm vào giỏ hàng trước khi thanh toán."
+        title="Chưa có sản phẩm nào được chọn"
+        description="Vui lòng chọn ít nhất một sản phẩm trong giỏ hàng để tiến hành thanh toán."
         action={
           <Button asChild variant="secondary">
-            <Link href="/san-pham">Tiếp tục mua sắm</Link>
+            <Link href="/gio-hang">Quay lại giỏ hàng</Link>
           </Button>
         }
       />

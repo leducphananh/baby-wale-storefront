@@ -41,7 +41,7 @@ export const checkoutFormSchema = z.object({
     .union([z.email("Địa chỉ email không hợp lệ."), z.literal("")])
     .optional(),
   note: z.string().trim().max(500, "Ghi chú quá dài.").optional(),
-  paymentMethod: z.enum(["cod", "bank_transfer"], "Vui lòng chọn phương thức thanh toán."),
+  paymentMethod: z.enum(["cod", "bank_transfer", "vnpay"], "Vui lòng chọn phương thức thanh toán."),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;

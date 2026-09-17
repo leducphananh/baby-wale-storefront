@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { Trash2 } from "lucide-react";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import { Price } from "@/components/catalog/price";
 import { ProductImage } from "@/components/catalog/product-image";
 import { QuantitySelector } from "@/components/catalog/quantity-selector";
@@ -33,9 +34,19 @@ function CartItemRow({ line }: CartItemRowProps) {
   const setQuantity = useCartStore((state) => state.setQuantity);
   const decrementQuantity = useCartStore((state) => state.decrementQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const selectedProductIds = useCartStore((state) => state.selectedProductIds);
+  const toggleLineSelection = useCartStore((state) => state.toggleLineSelection);
+  const isSelected = selectedProductIds.includes(line.productId);
 
   return (
     <li className="flex gap-3 border-b border-border py-4 last:border-b-0">
+      <div className="flex h-20 shrink-0 items-center sm:h-24">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => toggleLineSelection(line.productId, checked === true)}
+          aria-label={`Chọn ${line.name}`}
+        />
+      </div>
       <div className="w-20 shrink-0 sm:w-24">
         <ProductImage imageUrl={line.imageUrl} name={line.name} />
       </div>

@@ -26,12 +26,16 @@ export interface CheckoutFormProps {
   serverFieldError?: { field?: string; message: string };
 }
 
+const CHECKOUT_STORAGE_KEY = "babywale_checkout_form_v1";
+
 function CheckoutForm({ onSubmit, submitting, serverFieldError }: CheckoutFormProps) {
   const {
     register,
     handleSubmit,
     control,
     setError,
+    reset,
+    watch,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
@@ -44,6 +48,31 @@ function CheckoutForm({ onSubmit, submitting, serverFieldError }: CheckoutFormPr
       paymentMethod: "cod",
     },
   });
+
+  // Restore saved form values (except note) on mount
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CHECKOUT_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        reset((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch {
+      // ignore parsing errors
+    }
+  }, [reset]);
+
+  // Persist form values (except note) on change
+  const formValues = watch();
+  React.useEffect(() => {
+    try {
+      const { customerName, customerPhone, shippingAddress, customerEmail, paymentMethod } = formValues;
+      const toSave = { customerName, customerPhone, shippingAddress, customerEmail, paymentMethod };
+      localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(toSave));
+    } catch {
+      // ignore storage errors
+    }
+  }, [formValues]);
 
   const serverFieldKey = mapServerFieldToFormField(serverFieldError?.field);
   React.useEffect(() => {

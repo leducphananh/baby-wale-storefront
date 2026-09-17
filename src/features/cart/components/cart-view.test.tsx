@@ -27,7 +27,7 @@ const LINE_B: CartLine = {
 };
 
 afterEach(() => {
-  useCartStore.setState({ lines: [] });
+  useCartStore.setState({ lines: [], selectedProductIds: [] });
 });
 
 describe("CartView", () => {
@@ -47,7 +47,7 @@ describe("CartView", () => {
   });
 
   it("renders one row per cart line and the correct overall subtotal", () => {
-    useCartStore.setState({ lines: [LINE_A, LINE_B] });
+    useCartStore.setState({ lines: [LINE_A, LINE_B], selectedProductIds: [LINE_A.productId, LINE_B.productId] });
     render(<CartView />);
 
     expect(screen.getByText("Sản phẩm A")).toBeInTheDocument();
@@ -58,13 +58,13 @@ describe("CartView", () => {
   });
 
   it("renders the checkout CTA in exactly two DOM regions (desktop panel + mobile sticky bar), CSS-gated like Header — never both visible at the same viewport", () => {
-    useCartStore.setState({ lines: [LINE_A] });
+    useCartStore.setState({ lines: [LINE_A], selectedProductIds: [LINE_A.productId] });
     render(<CartView />);
     expect(screen.getAllByRole("link", { name: "Tiến hành đặt hàng" })).toHaveLength(2);
   });
 
   it("the checkout CTA is pure navigation — /thanh-toan, no order/checkout logic on this page", () => {
-    useCartStore.setState({ lines: [LINE_A] });
+    useCartStore.setState({ lines: [LINE_A], selectedProductIds: [LINE_A.productId] });
     render(<CartView />);
     for (const link of screen.getAllByRole("link", { name: "Tiến hành đặt hàng" })) {
       expect(link).toHaveAttribute("href", "/thanh-toan");

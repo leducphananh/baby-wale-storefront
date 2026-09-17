@@ -16,6 +16,7 @@ export interface OrderDetailViewProps {
 const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   cod: "Thanh toán khi nhận hàng (COD)",
   bank_transfer: "Chuyển khoản ngân hàng",
+  vnpay: "Thanh toán qua VNPay",
 };
 
 /**
@@ -28,6 +29,7 @@ const PAYMENT_METHOD_HELPER: Record<PaymentMethod, string> = {
   cod: "Bạn thanh toán bằng tiền mặt cho nhân viên khi nhận hàng.",
   bank_transfer:
     "Thông tin chuyển khoản sẽ được cửa hàng cung cấp khi xác nhận đơn. Nội dung chuyển khoản ghi mã đơn. Cửa hàng xác nhận khi nhận được thanh toán.",
+  vnpay: "Thanh toán trực tuyến qua cổng thanh toán VNPay.",
 };
 
 /** S2.1 §12.1 (locked) — the only status that needs an extra helper line. */

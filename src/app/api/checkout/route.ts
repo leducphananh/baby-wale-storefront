@@ -57,7 +57,25 @@ export async function POST(request: Request) {
     return NextResponse.json(mapped, { status: statusForCheckoutErrorCode(mapped.code as CheckoutErrorCode) });
   }
 
-  return NextResponse.json({ order: data as unknown as StorefrontOrderConfirmation }, { status: 201 });
+  const confirmation = data as unknown as StorefrontOrderConfirmation;
+
+  if (paymentMethod === "vnpay") {
+    // We dynamically import VNPay logic only when needed to keep the module clean
+    const { buildPaymentUrl, getVNPayCreateDate } = await import("@/lib/vnpay/crypto");
+    const ipAddr = request.headers.get("x-forwarded-for") || "127.0.0.1";
+    
+    const paymentUrl = buildPaymentUrl({
+      orderInfo: `Thanh toan don hang ${confirmation.order_number}`,
+      amount: confirmation.total,
+      ipAddr,
+      txnRef: confirmation.order_number,
+      createDate: getVNPayCreateDate(),
+    });
+    
+    return NextResponse.json({ order: confirmation, paymentUrl }, { status: 201 });
+  }
+
+  return NextResponse.json({ order: confirmation }, { status: 201 });
 }
 
 // A checkout submission is never cached.

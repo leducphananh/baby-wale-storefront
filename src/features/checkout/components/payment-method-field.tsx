@@ -31,6 +31,11 @@ const OPTIONS: { value: PaymentMethod; label: string; description: string }[] = 
     label: "Chuyển khoản ngân hàng",
     description: "Nhân viên sẽ liên hệ để cung cấp thông tin chuyển khoản.",
   },
+  {
+    value: "vnpay",
+    label: "Thanh toán qua VNPay",
+    description: "Thanh toán an toàn qua cổng thanh toán VNPay.",
+  },
 ];
 
 function PaymentMethodField({ value, onChange, id, ...ariaProps }: PaymentMethodFieldProps) {

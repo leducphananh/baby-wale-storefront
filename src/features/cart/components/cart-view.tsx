@@ -8,6 +8,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/layout/empty-state";
 import { Price } from "@/components/catalog/price";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { CartItemRow } from "@/features/cart/components/cart-item-row";
 import { CartSummary } from "@/features/cart/components/cart-summary";
@@ -33,6 +34,48 @@ function CartView() {
   const hasHydrated = useHasHydrated();
   const lines = useCartStore((state) => state.lines);
   const subtotal = useCartStore(selectCartSubtotal);
+  const selectedProductIds = useCartStore((state) => state.selectedProductIds);
+  const toggleAllSelection = useCartStore((state) => state.toggleAllSelection);
+  const isAllSelected = lines.length > 0 && selectedProductIds.length === lines.length;
+
+  React.useEffect(() => {
+    if (!hasHydrated || lines.length === 0) return;
+
+    const syncPrices = async () => {
+      try {
+        const response = await fetch("/api/cart/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: lines.map((line) => ({
+              productId: line.productId,
+              slug: line.slug,
+              name: line.name,
+              quantity: line.quantity,
+              cachedUnitPrice: line.cachedUnitPrice,
+            })),
+          }),
+        });
+
+        if (!response.ok) return;
+
+        const result = await response.json();
+        const priceUpdates = (result.items || [])
+          .filter((item: { status: string; currentPrice?: number; productId: string }) => item.status === "price_changed" && typeof item.currentPrice === "number")
+          .map((item: { status: string; currentPrice?: number; productId: string }) => ({ productId: item.productId, newPrice: item.currentPrice as number }));
+
+        if (priceUpdates.length > 0) {
+          useCartStore.getState().updateLinePrices(priceUpdates);
+        }
+      } catch {
+        // Silently fail — cart is still usable, checkout will catch any drift
+      }
+    };
+
+    const timeoutId = setTimeout(() => void syncPrices(), 0);
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasHydrated, lines.length > 0]);
 
   if (!hasHydrated) {
     return (
@@ -60,17 +103,28 @@ function CartView() {
 
   return (
     <div className="flex flex-col gap-8 pb-24 lg:flex-row lg:items-start lg:pb-0">
-      <ul className="flex-1">
-        {lines.map((line) => (
-          <CartItemRow key={line.productId} line={line} />
-        ))}
-      </ul>
+      <div className="flex-1">
+        <div className="flex h-12 items-center gap-3 border-b border-border pb-2">
+          <Checkbox
+            checked={isAllSelected}
+            onCheckedChange={(checked) => toggleAllSelection(checked === true)}
+            aria-label="Chọn tất cả sản phẩm"
+          />
+          <span className="text-body font-medium text-text">Chọn tất cả ({lines.length} sản phẩm)</span>
+        </div>
+        <ul>
+          {lines.map((line) => (
+            <CartItemRow key={line.productId} line={line} />
+          ))}
+        </ul>
+      </div>
 
       {/* Desktop: the summary card, CTA included, sits beside the items —
           S2.4 doesn't freeze a sticky desktop cart summary (only Checkout's
           does), so this is a normal in-flow panel, not sticky. */}
       <CartSummary
         subtotal={subtotal}
+        selectedCount={selectedProductIds.length}
         className="hidden rounded-md border border-border bg-surface p-4 lg:block lg:w-80 lg:shrink-0"
       />
 
@@ -79,12 +133,18 @@ function CartView() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-overlay lg:hidden">
         <div className="mx-auto flex max-w-content items-center justify-between gap-3">
           <div aria-live="polite">
-            <span className="text-caption text-text-muted">Tổng tiền hàng</span>
+            <span className="text-caption text-text-muted">Tổng tiền hàng ({selectedProductIds.length} sp)</span>
             <Price amount={subtotal} role="total" treatZeroAsUnavailable={false} className="block" />
           </div>
-          <Button asChild size="lg">
-            <Link href="/thanh-toan">Tiến hành đặt hàng</Link>
-          </Button>
+          {selectedProductIds.length === 0 ? (
+            <Button size="lg" disabled>
+              Tiến hành đặt hàng
+            </Button>
+          ) : (
+            <Button asChild size="lg">
+              <Link href="/thanh-toan">Tiến hành đặt hàng</Link>
+            </Button>
+          )}
         </div>
       </div>
     </div>

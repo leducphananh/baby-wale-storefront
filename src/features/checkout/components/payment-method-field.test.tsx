@@ -5,11 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import { PaymentMethodField } from "./payment-method-field";
 
 describe("PaymentMethodField", () => {
-  it("renders both MVP payment methods and no others", () => {
+  it("renders all supported payment methods", () => {
     render(<PaymentMethodField id="payment" value="cod" onChange={vi.fn()} />);
+
     expect(screen.getByText("Thanh toán khi nhận hàng (COD)")).toBeInTheDocument();
     expect(screen.getByText("Chuyển khoản ngân hàng")).toBeInTheDocument();
-    expect(screen.getAllByRole("radio")).toHaveLength(2);
+    expect(screen.getByText("Thanh toán qua VNPay")).toBeInTheDocument();
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 
   it("shows a check mark next to the selected option only", () => {

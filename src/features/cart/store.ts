@@ -42,6 +42,7 @@ export interface AddCartLineInput {
 
 interface CartState {
   lines: CartLine[];
+  selectedProductIds: string[];
   addItem: (input: AddCartLineInput) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
@@ -53,6 +54,11 @@ interface CartState {
    * performs everywhere in this UI: below the minimum, there is no line).
    */
   decrementQuantity: (productId: string) => void;
+  /** Updates cachedUnitPrice for lines (e.g. after revalidation finds a new price). */
+  updateLinePrices: (updates: { productId: string; newPrice: number }[]) => void;
+  toggleLineSelection: (productId: string, selected?: boolean) => void;
+  toggleAllSelection: (selected: boolean) => void;
+  clearSelected: () => void;
   clear: () => void;
 }
 
@@ -117,12 +123,18 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       lines: [],
+      selectedProductIds: [],
 
       addItem: (input) =>
         set((state) => {
           const quantityToAdd = clampQuantity(input.quantity ?? 1);
           const cachedAt = new Date().toISOString();
           const existingIndex = state.lines.findIndex((line) => line.productId === input.productId);
+
+          let nextSelected = state.selectedProductIds;
+          if (!nextSelected.includes(input.productId)) {
+            nextSelected = [...nextSelected, input.productId];
+          }
 
           if (existingIndex === -1) {
             const newLine: CartLine = {
@@ -135,7 +147,7 @@ export const useCartStore = create<CartState>()(
               cachedUnitPrice: input.cachedUnitPrice,
               cachedAt,
             };
-            return { lines: [...state.lines, newLine] };
+            return { lines: [...state.lines, newLine], selectedProductIds: nextSelected };
           }
 
           // Line identity is productId — adding an existing product
@@ -153,11 +165,15 @@ export const useCartStore = create<CartState>()(
                   }
                 : line,
             ),
+            selectedProductIds: nextSelected,
           };
         }),
 
       removeItem: (productId) =>
-        set((state) => ({ lines: state.lines.filter((line) => line.productId !== productId) })),
+        set((state) => ({
+          lines: state.lines.filter((line) => line.productId !== productId),
+          selectedProductIds: state.selectedProductIds.filter((id) => id !== productId),
+        })),
 
       setQuantity: (productId, quantity) =>
         set((state) => ({
@@ -178,7 +194,10 @@ export const useCartStore = create<CartState>()(
           const line = state.lines.find((candidate) => candidate.productId === productId);
           if (!line) return state;
           if (line.quantity <= 1) {
-            return { lines: state.lines.filter((candidate) => candidate.productId !== productId) };
+            return {
+              lines: state.lines.filter((candidate) => candidate.productId !== productId),
+              selectedProductIds: state.selectedProductIds.filter((id) => id !== productId),
+            };
           }
           return {
             lines: state.lines.map((candidate) =>
@@ -187,19 +206,72 @@ export const useCartStore = create<CartState>()(
           };
         }),
 
-      clear: () => set({ lines: [] }),
+      updateLinePrices: (updates) =>
+        set((state) => {
+          const updateMap = new Map(updates.map((u) => [u.productId, u.newPrice]));
+          let changed = false;
+          const nextLines = state.lines.map((line) => {
+            if (updateMap.has(line.productId)) {
+              const newPrice = updateMap.get(line.productId)!;
+              if (line.cachedUnitPrice !== newPrice) {
+                changed = true;
+                return { ...line, cachedUnitPrice: newPrice, cachedAt: new Date().toISOString() };
+              }
+            }
+            return line;
+          });
+          return changed ? { lines: nextLines } : state;
+        }),
+
+      toggleLineSelection: (productId, selected) =>
+        set((state) => {
+          const isCurrentlySelected = state.selectedProductIds.includes(productId);
+          const shouldSelect = selected ?? !isCurrentlySelected;
+          if (shouldSelect && !isCurrentlySelected) {
+            return { selectedProductIds: [...state.selectedProductIds, productId] };
+          }
+          if (!shouldSelect && isCurrentlySelected) {
+            return { selectedProductIds: state.selectedProductIds.filter((id) => id !== productId) };
+          }
+          return state;
+        }),
+
+      toggleAllSelection: (selected) =>
+        set((state) => ({
+          selectedProductIds: selected ? state.lines.map((line) => line.productId) : [],
+        })),
+
+      clearSelected: () =>
+        set((state) => {
+          const selectedSet = new Set(state.selectedProductIds);
+          return {
+            lines: state.lines.filter((line) => !selectedSet.has(line.productId)),
+            selectedProductIds: [],
+          };
+        }),
+
+      clear: () => set({ lines: [], selectedProductIds: [] }),
     }),
     {
       name: "baby-wale-cart",
-      // Only `lines` is meaningful to persist; the action functions are
+      // Only `lines` and `selectedProductIds` are meaningful to persist; the action functions are
       // recreated on every load regardless.
-      partialize: (state) => ({ lines: state.lines }),
+      partialize: (state) => ({ lines: state.lines, selectedProductIds: state.selectedProductIds }),
       // Sanitize whatever localStorage actually contained (S6 §18) before it
       // becomes live state — see `sanitizeLines`.
-      merge: (persistedState, currentState) => ({
-        ...currentState,
-        lines: sanitizeLines((persistedState as { lines?: unknown } | undefined)?.lines),
-      }),
+      merge: (persistedState, currentState) => {
+        const pState = persistedState as { lines?: unknown; selectedProductIds?: unknown } | undefined;
+        const sanitizedLines = sanitizeLines(pState?.lines);
+        const validIds = new Set(sanitizedLines.map((l) => l.productId));
+        const selectedProductIds = Array.isArray(pState?.selectedProductIds)
+          ? pState.selectedProductIds.filter((id) => typeof id === "string" && validIds.has(id))
+          : [];
+        return {
+          ...currentState,
+          lines: sanitizedLines,
+          selectedProductIds,
+        };
+      },
     },
   ),
 );
@@ -214,7 +286,11 @@ export function selectCartCount(state: CartState): number {
  * authoritative.** A future checkout (S7/S8) always re-reads the real
  * `selling_price` server-side; this value exists purely so the customer can
  * see an estimate on `/gio-hang` before that happens.
+ * Only calculates for selected lines.
  */
 export function selectCartSubtotal(state: CartState): number {
-  return state.lines.reduce((sum, line) => sum + line.quantity * line.cachedUnitPrice, 0);
+  const selectedSet = new Set(state.selectedProductIds);
+  return state.lines
+    .filter((line) => selectedSet.has(line.productId))
+    .reduce((sum, line) => sum + line.quantity * line.cachedUnitPrice, 0);
 }

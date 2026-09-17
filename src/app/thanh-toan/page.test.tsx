@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 afterEach(() => {
-  useCartStore.setState({ lines: [] });
+  useCartStore.setState({ lines: [], selectedProductIds: [] });
 });
 
 describe("CheckoutPage (/thanh-toan)", () => {
@@ -17,7 +17,7 @@ describe("CheckoutPage (/thanh-toan)", () => {
     render(<CheckoutPage />);
     expect(screen.getByRole("heading", { level: 1, name: "Thanh toán" })).toBeInTheDocument();
     // Empty cart by default — CheckoutView renders its own empty state.
-    expect(screen.getByText("Giỏ hàng đang trống")).toBeInTheDocument();
+    expect(screen.getByText("Chưa có sản phẩm nào được chọn")).toBeInTheDocument();
   });
 
   it("is not indexed — a private, non-shareable, per-browser page (nextjs-seo)", () => {
