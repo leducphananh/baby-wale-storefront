@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/layout/container";
 import { CheckoutView } from "@/features/checkout/components/checkout-view";
+import { getAccountData } from "@/features/account/server/get-account-data";
 
 /**
  * `/thanh-toan` — Checkout (S7). A thin Server Component shell, same
@@ -25,11 +26,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const { user, profile } = await getAccountData();
+
+  const initialValues = {
+    customerName: profile?.name ?? user?.user_metadata?.full_name ?? "",
+    customerPhone: profile?.phone ?? "",
+    shippingAddress: profile?.address ?? "",
+    customerEmail: profile?.email ?? user?.email ?? "",
+  };
+
   return (
     <Container className="flex flex-col gap-6 py-8">
       <h1 className="text-h1 text-text">Thanh toán</h1>
-      <CheckoutView />
+      <CheckoutView initialValues={initialValues} />
     </Container>
   );
 }

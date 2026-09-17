@@ -24,11 +24,12 @@ export interface CheckoutFormProps {
   submitting: boolean;
   /** Field-level error surfaced from a server response (INVALID_CUSTOMER_DATA). */
   serverFieldError?: { field?: string; message: string };
+  initialValues?: Partial<CheckoutFormValues>;
 }
 
 const CHECKOUT_STORAGE_KEY = "babywale_checkout_form_v1";
 
-function CheckoutForm({ onSubmit, submitting, serverFieldError }: CheckoutFormProps) {
+function CheckoutForm({ onSubmit, submitting, serverFieldError, initialValues }: CheckoutFormProps) {
   const {
     register,
     handleSubmit,
@@ -40,10 +41,10 @@ function CheckoutForm({ onSubmit, submitting, serverFieldError }: CheckoutFormPr
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
-      customerName: "",
-      customerPhone: "",
-      shippingAddress: "",
-      customerEmail: "",
+      customerName: initialValues?.customerName ?? "",
+      customerPhone: initialValues?.customerPhone ?? "",
+      shippingAddress: initialValues?.shippingAddress ?? "",
+      customerEmail: initialValues?.customerEmail ?? "",
       note: "",
       paymentMethod: "cod",
     },
@@ -55,12 +56,20 @@ function CheckoutForm({ onSubmit, submitting, serverFieldError }: CheckoutFormPr
       const saved = localStorage.getItem(CHECKOUT_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        reset((prev) => ({ ...prev, ...parsed }));
+        // localStorage wins if present (user explicitly typed), else fallback to initialValues
+        const merged = { ...initialValues };
+        if (parsed.customerName) merged.customerName = parsed.customerName;
+        if (parsed.customerPhone) merged.customerPhone = parsed.customerPhone;
+        if (parsed.shippingAddress) merged.shippingAddress = parsed.shippingAddress;
+        if (parsed.customerEmail) merged.customerEmail = parsed.customerEmail;
+        if (parsed.paymentMethod) merged.paymentMethod = parsed.paymentMethod;
+        
+        reset((prev) => ({ ...prev, ...merged }));
       }
     } catch {
       // ignore parsing errors
     }
-  }, [reset]);
+  }, [reset, initialValues]);
 
   // Persist form values (except note) on change
   const formValues = watch();

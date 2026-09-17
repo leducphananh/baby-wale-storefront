@@ -61,7 +61,11 @@ function formatIssuePrice(amount: number | null): string {
  * constraint, not the disabled button, is what actually prevents a
  * duplicate order.
  */
-function CheckoutView() {
+export interface CheckoutViewProps {
+  initialValues?: Partial<CheckoutFormValues>;
+}
+
+function CheckoutView({ initialValues }: CheckoutViewProps) {
   const router = useRouter();
   const hasHydrated = useHasHydrated();
   const allLines = useCartStore((state) => state.lines);
@@ -243,6 +247,7 @@ function CheckoutView() {
         ) : null}
 
         <CheckoutForm
+          initialValues={initialValues}
           onSubmit={handleSubmit}
           submitting={submitting || checkingIssues}
           serverFieldError={submitError?.field ? { field: submitError.field, message: submitError.message } : undefined}
