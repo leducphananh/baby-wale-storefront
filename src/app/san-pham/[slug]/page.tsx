@@ -13,6 +13,7 @@ import { ProductPurchasePanel } from "@/features/cart/components/product-purchas
 import { getStorefrontProductBySlug } from "@/features/catalog/server/get-product-by-slug";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
 import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
+import { env } from "@/lib/env";
 
 const RELATED_LIMIT = 5;
 
@@ -71,8 +72,24 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     : null;
   const relatedProducts = (relatedPage?.items ?? []).filter((item) => item.productId !== product.productId);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description || `${product.name} tại Baby Wale.`,
+    brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+    offers: {
+      "@type": "Offer",
+      price: product.sellingPrice,
+      priceCurrency: "VND",
+      availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `${env.NEXT_PUBLIC_SITE_URL}/san-pham/${product.slug}`,
+    },
+  };
+
   return (
     <Container className="flex flex-col gap-8 py-6 lg:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ProductBreadcrumb
         categoryName={product.categoryName}
         categorySlug={product.categorySlug}

@@ -23,5 +23,6 @@ export default function robots(): MetadataRoute.Robots {
       ],
     },
     host: env.NEXT_PUBLIC_SITE_URL,
+    sitemap: `${env.NEXT_PUBLIC_SITE_URL}/sitemap.xml`,
   };
 }

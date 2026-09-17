@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
+import { listStorefrontProducts } from "@/features/catalog/server/list-products";
 import { env } from "@/lib/env";
 
 /**
@@ -15,6 +16,7 @@ import { env } from "@/lib/env";
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categories = await listStorefrontCategories();
+  const productsResponse = await listStorefrontProducts({ limit: 10000 }); // High limit for sitemap MVP
   const base = env.NEXT_PUBLIC_SITE_URL;
 
   return [
@@ -24,6 +26,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${base}/danh-muc/${category.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.7,
+    })),
+    ...(productsResponse?.items || []).map((product) => ({
+      url: `${base}/san-pham/${product.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
     })),
   ];
 }

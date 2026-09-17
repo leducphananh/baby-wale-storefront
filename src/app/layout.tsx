@@ -37,6 +37,14 @@ export const metadata: Metadata = {
   description:
     "Baby Wale — cửa hàng mẹ và bé: bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng, nhân viên xác nhận từng đơn trước khi xử lý.",
   applicationName: "Baby Wale",
+  openGraph: {
+    title: "Baby Wale — Cửa hàng Mẹ và Bé",
+    description: "Baby Wale — cửa hàng mẹ và bé: bỉm, sữa và đồ dùng cho bé.",
+    url: env.NEXT_PUBLIC_SITE_URL,
+    siteName: "Baby Wale",
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
