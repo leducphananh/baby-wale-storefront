@@ -1,8 +1,8 @@
-# CLAUDE.md — Baby Wale Storefront
+# AGENTS.md — Baby Wale Storefront
 
 Always-on project rules for the **new customer-facing Baby Wale storefront** (Next.js
-App Router). Detailed, topic-specific rules live in `.claude/skills/*/SKILL.md`; Claude
-Code loads a skill's full instructions when the task matches. This file is the short
+App Router). Detailed, topic-specific rules live in `.agents/skills/*/SKILL.md`; Antigravity
+loads a skill's full instructions when the task matches. This file is the short
 version that must never be forgotten, even when no skill fires. Sections marked
 **[always]** apply to every change, no exceptions.
 
