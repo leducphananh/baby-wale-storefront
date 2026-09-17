@@ -129,6 +129,19 @@ function CheckoutView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasHydrated, lines.length > 0]);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("error") === "vnpay_failed") {
+        setSubmitError({ code: "ORDER_CREATE_FAILED", message: "Giao dịch thanh toán bị huỷ hoặc thất bại. Vui lòng đặt lại." });
+        // Clean up URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("error");
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
+  }, []);
+
   const handleSubmit = async (values: CheckoutFormValues) => {
     setSubmitError(null);
 
@@ -168,13 +181,12 @@ function CheckoutView() {
         // order is already committed server-side either way; the success
         // page has its own fallback state for a missing confirmation.
       }
-      // Clear only after the RPC returned a committed confirmation
-      // (cart-state rule 8 / checkout-security rule 8).
-      clearSelected();
-      
       if (paymentUrl) {
         window.location.href = paymentUrl;
       } else {
+        // Clear only after the RPC returned a committed confirmation
+        // (cart-state rule 8 / checkout-security rule 8).
+        clearSelected();
         router.push("/dat-hang-thanh-cong");
       }
     } catch {

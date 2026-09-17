@@ -59,6 +59,20 @@ function OrderSuccessView() {
   const [copied, setCopied] = React.useState(false);
   const [detail, setDetail] = React.useState<OrderDetail | null>(null);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("clear_cart") === "true") {
+        import("@/features/cart/store").then(({ useCartStore }) => {
+          useCartStore.getState().clearSelected();
+        });
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("clear_cart");
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
+  }, []);
+
   let confirmation: StorefrontOrderConfirmation | null = null;
   if (raw) {
     try {
