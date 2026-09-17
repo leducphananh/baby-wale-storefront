@@ -40,7 +40,7 @@ export function AccountView({ email, fullName, profile, orders }: AccountViewPro
           </p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={handleLogout}
           disabled={isPending}
           className="w-full sm:w-auto"
@@ -89,7 +89,7 @@ export function AccountView({ email, fullName, profile, orders }: AccountViewPro
               <div className="py-8 text-center text-sm text-neutral-500">
                 Bạn chưa có đơn hàng nào.
                 <div className="mt-4">
-                  <Button asChild variant="outline">
+                  <Button asChild variant="secondary">
                     <Link href="/san-pham">Bắt đầu mua sắm</Link>
                   </Button>
                 </div>

@@ -20,7 +20,7 @@ export default async function AccountPage() {
       <AccountView
         email={user.email ?? ""}
         fullName={user.user_metadata?.full_name ?? "Khách hàng"}
-        profile={profile}
+        profile={profile ?? null}
         orders={orders}
       />
     </Container>

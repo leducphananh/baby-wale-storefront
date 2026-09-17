@@ -95,7 +95,7 @@ export function LoginView() {
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           className="w-full"
           disabled={isPending}
           onClick={async () => {
