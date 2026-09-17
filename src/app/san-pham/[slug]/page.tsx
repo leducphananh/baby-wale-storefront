@@ -87,9 +87,46 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Trang chủ",
+        item: env.NEXT_PUBLIC_SITE_URL,
+      },
+      ...(product.categorySlug
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: product.categoryName,
+              item: `${env.NEXT_PUBLIC_SITE_URL}/danh-muc/${product.categorySlug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.name,
+              item: `${env.NEXT_PUBLIC_SITE_URL}/san-pham/${product.slug}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: product.name,
+              item: `${env.NEXT_PUBLIC_SITE_URL}/san-pham/${product.slug}`,
+            },
+          ]),
+    ],
+  };
+
   return (
     <Container className="flex flex-col gap-8 py-6 lg:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <ProductBreadcrumb
         categoryName={product.categoryName}
         categorySlug={product.categorySlug}

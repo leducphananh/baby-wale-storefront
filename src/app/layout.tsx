@@ -52,9 +52,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Baby Wale",
+    url: env.NEXT_PUBLIC_SITE_URL,
+    description: "Cửa hàng mẹ và bé: bỉm, sữa và đồ dùng cho bé.",
+  };
+
   return (
     <html lang="vi" className={bodyFont.variable}>
       <body className="flex min-h-dvh flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

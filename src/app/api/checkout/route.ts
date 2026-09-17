@@ -5,6 +5,8 @@ import { mapCheckoutErrorCode, statusForCheckoutErrorCode } from "@/features/che
 import { checkoutRequestSchema } from "@/features/checkout/schema";
 import type { CheckoutErrorCode, StorefrontOrderConfirmation } from "@/features/checkout/types";
 
+import { rateLimit } from "@/lib/rate-limit";
+
 /**
  * The storefront's only order-write path (`checkout-security`). Server Zod
  * re-validates the request (mandatory layer 2 — never trust that the
@@ -15,6 +17,19 @@ import type { CheckoutErrorCode, StorefrontOrderConfirmation } from "@/features/
  * `/api/cart/revalidate` check. One RPC call = one atomic transaction.
  */
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
+  const { success, remaining, reset } = rateLimit(`checkout_${ip}`, 5, 60000); // 5 checkouts per minute per IP
+
+  if (!success) {
+    const mapped = mapCheckoutErrorCode("RATE_LIMITED");
+    return NextResponse.json(mapped, {
+      status: statusForCheckoutErrorCode("RATE_LIMITED"),
+      headers: {
+        "X-RateLimit-Remaining": remaining.toString(),
+        "X-RateLimit-Reset": reset.toString(),
+      },
+    });
+  }
   const json = await request.json().catch(() => null);
   const parsed = checkoutRequestSchema.safeParse(json);
 

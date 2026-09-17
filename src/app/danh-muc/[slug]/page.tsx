@@ -6,6 +6,7 @@ import { ProductGrid } from "@/components/catalog/product-grid";
 import { Container } from "@/components/layout/container";
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
+import { env } from "@/lib/env";
 
 const PAGE_SIZE = 24;
 
@@ -66,8 +67,28 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   const totalPages = Math.max(1, Math.ceil(productPage.totalCount / PAGE_SIZE));
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Trang chủ",
+        item: env.NEXT_PUBLIC_SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: category.name,
+        item: `${env.NEXT_PUBLIC_SITE_URL}/danh-muc/${category.slug}`,
+      },
+    ],
+  };
+
   return (
     <Container className="flex flex-col gap-6 py-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <h1 className="text-h1 text-text">{category.name}</h1>
       <p className="text-body-sm text-text-muted" aria-live="polite">
         {productPage.totalCount} sản phẩm

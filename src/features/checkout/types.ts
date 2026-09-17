@@ -45,7 +45,8 @@ export type CheckoutErrorCode =
   | "PRICE_CHANGED"
   | "INVALID_QUANTITY"
   | "INVALID_CUSTOMER_DATA"
-  | "ORDER_CREATE_FAILED";
+  | "ORDER_CREATE_FAILED"
+  | "RATE_LIMITED";
 
 export interface CheckoutErrorDetail {
   productId?: string;

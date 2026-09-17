@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { extractTrackingToken, trackingLookupRequestSchema } from "@/features/checkout/tracking";
 import type { OrderDetail, OrderLookupResponse } from "@/features/checkout/types";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * The storefront's only order-read path for a guest (S8 §19). Calls the
@@ -17,6 +18,23 @@ import type { OrderDetail, OrderLookupResponse } from "@/features/checkout/types
  * unexpected backend failure is a `500`.
  */
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
+  // Allow 15 lookups per minute per IP to deter enumeration
+  const { success, remaining, reset } = rateLimit(`lookup_${ip}`, 15, 60000); 
+
+  if (!success) {
+    return NextResponse.json(
+      { code: "RATE_LIMITED", message: "Bạn tra cứu quá nhanh. Vui lòng thử lại sau giây lát." },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      }
+    );
+  }
+
   const json = await request.json().catch(() => null);
   const parsed = trackingLookupRequestSchema.safeParse(json);
 

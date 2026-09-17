@@ -50,6 +50,8 @@ export function mapCheckoutErrorCode(
         field: detail.field,
         message: fieldMessage(detail.field),
       };
+    case "RATE_LIMITED":
+      return { code: "RATE_LIMITED", message: "Bạn thao tác quá nhanh. Vui lòng thử lại sau giây lát." };
     default:
       // Unmapped/unexpected — never leak the raw code or Postgres text.
       return { code: "ORDER_CREATE_FAILED", message: "Không thể tạo đơn hàng. Vui lòng thử lại." };
@@ -85,6 +87,8 @@ export function statusForCheckoutErrorCode(code: CheckoutErrorCode): number {
     case "INVALID_QUANTITY":
     case "INVALID_CUSTOMER_DATA":
       return 400;
+    case "RATE_LIMITED":
+      return 429;
     case "ORDER_CREATE_FAILED":
     default:
       return 500;

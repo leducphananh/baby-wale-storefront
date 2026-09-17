@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/layout/section-heading";
 import { Button } from "@/components/ui/button";
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
+import { listStorefrontBestSellers } from "@/features/catalog/server/list-best-sellers";
 import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
 
 /**
@@ -30,9 +31,10 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [categories, newProducts] = await Promise.all([
+  const [categories, newProducts, bestSellers] = await Promise.all([
     listStorefrontCategories(),
     listStorefrontProducts({ limit: 8 }),
+    listStorefrontBestSellers({ limit: 8 }),
   ]);
 
   return (
@@ -60,6 +62,21 @@ export default async function HomePage() {
               <CategoryTile key={category.categoryId} category={category} />
             ))}
           </div>
+        </Container>
+      ) : null}
+
+      {/* Best Sellers */}
+      {bestSellers.length > 0 ? (
+        <Container className="flex flex-col gap-4">
+          <SectionHeading
+            title="Sản phẩm bán chạy"
+            action={
+              <Link href="/san-pham" className="text-body-sm font-medium text-primary hover:underline">
+                Xem tất cả
+              </Link>
+            }
+          />
+          <ProductRail products={bestSellers} />
         </Container>
       ) : null}
 
