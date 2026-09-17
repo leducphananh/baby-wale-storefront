@@ -54,13 +54,7 @@ export function buildPaymentUrl(params: {
   const hmac = crypto.createHmac("sha512", hashSecret);
   const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
   
-  const paymentUrl = new URL(url);
-  for (const [key, value] of Object.entries(sortedParams)) {
-    paymentUrl.searchParams.append(decodeURIComponent(key), decodeURIComponent(value));
-  }
-  paymentUrl.searchParams.append('vnp_SecureHash', signed);
-  
-  return paymentUrl.toString();
+  return `${url}?${signData}&vnp_SecureHash=${signed}`;
 }
 
 export function verifyIpnSignature(query: Record<string, string>): boolean {
