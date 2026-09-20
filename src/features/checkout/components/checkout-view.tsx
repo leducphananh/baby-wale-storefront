@@ -256,7 +256,7 @@ function CheckoutView({ initialValues }: CheckoutViewProps) {
 
       <CheckoutSummary
         subtotal={subtotal}
-        className="rounded-md border border-border bg-surface p-4 lg:sticky lg:top-24 lg:w-80 lg:shrink-0"
+        className="rounded-3xl border border-border/80 bg-surface p-6 shadow-soft lg:sticky lg:top-24 lg:w-80 lg:shrink-0"
       />
     </div>
   );

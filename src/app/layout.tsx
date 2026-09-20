@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Nunito } from "next/font/google";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -8,14 +8,12 @@ import { env } from "@/lib/env";
 import "./globals.css";
 
 /**
- * Be Vietnam Pro loaded through `next/font` (self-hosted, no layout-shift).
- * The typography *scale* (sizes, weights, roles) is frozen at S2.4 and
- * implemented in `globals.css` (S2.5) — this only loads the font file.
+ * Nunito loaded through `next/font` for the AI Studio reference UI.
  */
-const bodyFont = Be_Vietnam_Pro({
+const bodyFont = Nunito({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-be-vietnam",
+  variable: "--font-nunito",
   display: "swap",
 });
 

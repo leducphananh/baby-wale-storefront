@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, Sparkles, ChevronRight, CheckCircle, ShieldCheck } from "lucide-react";
 
 import { CategoryTile } from "@/components/catalog/category-tile";
 import { ProductRail } from "@/components/catalog/product-rail";
@@ -12,17 +13,6 @@ import { listStorefrontProducts } from "@/features/catalog/server/list-products"
 import { listStorefrontBestSellers } from "@/features/catalog/server/list-best-sellers";
 import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
 
-/**
- * Storefront homepage (S4) — a real shopping entry point: hero → categories
- * → new products → trust info. Reuses the S2.5 primitives and the S2.4
- * approved content-claim contract (§15) — no fabricated years-in-business,
- * customer counts, certifications, discounts, or shipping promises
- * (`storefront-ui-design`, `public-data-contract`).
- *
- * Descriptive-content cache tier (nextjs-cache-correctness): products/
- * categories here also carry price + stock, so this page uses the shorter
- * blended tier (5 min), not the 1h "pure content" tier.
- */
 export const revalidate = 300;
 
 export const metadata: Metadata = {
@@ -39,85 +29,210 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-12 pb-16 lg:gap-16">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/hero_background.jpg"
-            alt="Baby Wale Hero"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/10 lg:bg-transparent" />
-        </div>
-        <Container className="relative flex flex-col items-start gap-4 py-16 lg:py-32">
-          <div className="max-w-2xl rounded-xl bg-surface/80 p-8 backdrop-blur-md lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-            <h1 className="text-display text-text drop-shadow-sm">Baby Wale — mẹ &amp; bé, mua sắm an tâm</h1>
-            <p className="mt-4 max-w-lg text-body text-text-muted drop-shadow-sm">
-              Bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng — nhân viên Baby Wale xác nhận
-              từng đơn trước khi xử lý.
-            </p>
-            <Button asChild size="lg" className="mt-8 shadow-md hover:shadow-lg">
-              <Link href="/san-pham">Mua sắm ngay</Link>
-            </Button>
+    <div className="space-y-12 sm:space-y-16 pb-8">
+      {/* 1. Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-tint via-background to-background pt-6 sm:pt-10 pb-12 sm:pb-16 border-b border-border/60">
+        <Container>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-primary-tint shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                <span className="text-xs font-bold text-primary">
+                  Cửa Hàng Mẹ & Bé Baby Wale
+                </span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text tracking-tight leading-[1.2]">
+                Dịu Lành Cho Bé,{" "}
+                <span className="text-primary underline decoration-secondary decoration-wavy decoration-2">
+                  An Tâm
+                </span>{" "}
+                Cho Mẹ
+              </h1>
+
+              <p className="text-sm sm:text-base text-text-muted leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Baby Wale đồng hành cùng cha mẹ trong từng cữ sữa, giấc ngủ và bước đi chập chững đầu đời. 
+                Bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng — nhân viên Baby Wale xác nhận từng đơn.
+              </p>
+
+              {/* Call to actions */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
+                <Button asChild className="px-6 py-6 rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-95">
+                  <Link href="/san-pham" className="flex items-center gap-2">
+                    Mua sắm ngay
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="secondary" className="px-6 py-6 rounded-2xl transition-colors">
+                  <Link href="#danh-muc">Khám phá danh mục</Link>
+                </Button>
+              </div>
+
+              {/* Quick Trust Badges */}
+              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs text-text/80 font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-success" />
+                  Xác nhận từng đơn hàng
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-success" />
+                  COD hoặc chuyển khoản
+                </span>
+              </div>
+            </div>
+
+            {/* Right Visual Image Composition */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative mx-auto max-w-md lg:max-w-none">
+                {/* Decorative blob backgrounds */}
+                <div className="absolute -top-6 -left-6 w-64 h-64 bg-primary-tint rounded-full filter blur-3xl opacity-60 -z-10" />
+                <div className="absolute -bottom-6 -right-6 w-64 h-64 bg-info/40 rounded-full filter blur-3xl opacity-50 -z-10" />
+
+                {/* Hero Card Image */}
+                <div className="relative bg-surface p-3 sm:p-4 rounded-3xl shadow-card border border-border overflow-hidden">
+                  <div className="relative w-full h-80 sm:h-96 overflow-hidden rounded-2xl bg-surface-subtle">
+                    <Image
+                      src="/hero_background.jpg"
+                      alt="Bé yêu Baby Wale"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <div className="absolute bottom-6 right-6 bg-surface/95 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl shadow-lg border border-border flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-success-bg text-success flex items-center justify-center">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-text-muted uppercase">
+                        An Tâm
+                      </span>
+                      <span className="text-xs font-black text-text">
+                        Baby Wale
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Container>
       </section>
 
-      {/* Categories */}
-      {categories.length > 0 ? (
-        <Container className="flex flex-col gap-4">
-          <SectionHeading title="Danh mục sản phẩm" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {categories.slice(0, 12).map((category) => (
-              <CategoryTile key={category.categoryId} category={category} />
+      {/* 2. Featured Categories */}
+      {categories.length > 0 && (
+        <section id="danh-muc">
+          <Container>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
+              <div>
+                <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+                  Khám phá theo nhu cầu
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-text mt-1">
+                  Danh Mục Sản Phẩm Cho Bé
+                </h2>
+              </div>
+              <Link
+                href="/san-pham"
+                className="text-xs sm:text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 self-start sm:self-auto group transition-colors"
+              >
+                Xem tất cả sản phẩm
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {categories.slice(0, 12).map((category) => (
+                <CategoryTile key={category.categoryId} category={category} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
+
+      {/* 3. Best Sellers */}
+      {bestSellers.length > 0 && (
+        <section>
+          <Container>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+              <div>
+                <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+                  Tuyển chọn dành riêng cho bé
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-text mt-1">
+                  Sản Phẩm Được Mẹ Tin Chọn
+                </h2>
+              </div>
+              <Link
+                href="/san-pham"
+                className="text-xs sm:text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 self-start sm:self-auto group transition-colors"
+              >
+                Xem tất cả
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+            
+            <ProductRail products={bestSellers} />
+          </Container>
+        </section>
+      )}
+
+      {/* 4. New Products */}
+      {newProducts.items.length > 0 && (
+        <section>
+          <Container>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+              <div>
+                <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+                  Cập nhật liên tục
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-text mt-1">
+                  Sản Phẩm Mới Về
+                </h2>
+              </div>
+              <Link
+                href="/san-pham"
+                className="text-xs sm:text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 self-start sm:self-auto group transition-colors"
+              >
+                Xem tất cả
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            <ProductRail products={newProducts.items} />
+          </Container>
+        </section>
+      )}
+
+      {/* 5. Trust Section */}
+      <section className="bg-surface-subtle border-y border-border/80 py-12">
+        <Container>
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+              Lý do cha mẹ lựa chọn Baby Wale
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-text mt-1">
+              Tiêu Chuẩn Chăm Sóc Bé Yêu
+            </h2>
+            <p className="text-xs sm:text-sm text-text-muted mt-2">
+              Chúng tôi hiểu rằng mỗi sản phẩm tiếp xúc với làn da và cơ thể bé đều phải an toàn.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TRUST_COPY_LINES.map((line, idx) => (
+              <div key={idx} className="bg-surface p-6 rounded-2xl border border-border shadow-soft flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-2xl bg-primary-tint/50 text-primary flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-base text-text mb-2">{line}</h3>
+              </div>
             ))}
           </div>
         </Container>
-      ) : null}
-
-      {/* Best Sellers */}
-      {bestSellers.length > 0 ? (
-        <Container className="flex flex-col gap-4">
-          <SectionHeading
-            title="Sản phẩm bán chạy"
-            action={
-              <Link href="/san-pham" className="text-body-sm font-medium text-primary hover:underline">
-                Xem tất cả
-              </Link>
-            }
-          />
-          <ProductRail products={bestSellers} />
-        </Container>
-      ) : null}
-
-      {/* New products */}
-      {newProducts.items.length > 0 ? (
-        <Container className="flex flex-col gap-4">
-          <SectionHeading
-            title="Sản phẩm mới"
-            action={
-              <Link href="/san-pham" className="text-body-sm font-medium text-primary hover:underline">
-                Xem tất cả
-              </Link>
-            }
-          />
-          <ProductRail products={newProducts.items} />
-        </Container>
-      ) : null}
-
-      {/* Trust / service info — S2.4 §15 approved copy only */}
-      <Container>
-        <div className="grid grid-cols-1 gap-4 rounded-md border border-border bg-surface p-6 sm:grid-cols-3">
-          {TRUST_COPY_LINES.map((line) => (
-            <p key={line} className="text-body-sm text-text">
-              {line}
-            </p>
-          ))}
-        </div>
-      </Container>
+      </section>
     </div>
   );
 }

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  * which fails contrast for text (§4.1).
  */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-xs px-2 py-1 text-caption font-medium",
+  "inline-flex items-center gap-1 rounded-md px-2 py-1 text-caption font-medium",
   {
     variants: {
       variant: {

@@ -63,7 +63,7 @@ function QuantitySelector({
   const atMin = value <= MIN;
 
   return (
-    <div className={cn("inline-flex h-11 items-stretch rounded-sm border border-border", className)}>
+    <div className={cn("inline-flex h-11 items-stretch rounded-xl border border-border bg-white shadow-xs overflow-hidden", className)}>
       <button
         type="button"
         disabled={disabled || (atMin && !onDecrementBelowMin)}
@@ -75,7 +75,7 @@ function QuantitySelector({
           onChange(clamp(value - 1, maxHint));
         }}
         aria-label={decreaseLabel}
-        className="sm-target flex w-11 items-center justify-center text-text disabled:pointer-events-none disabled:opacity-40 hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="sm-target flex w-11 items-center justify-center text-text disabled:pointer-events-none disabled:opacity-40 hover:bg-surface-subtle transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <Minus className="size-4" aria-hidden="true" />
       </button>
@@ -110,7 +110,7 @@ function QuantitySelector({
         disabled={disabled || value >= maxHint}
         onClick={() => onChange(clamp(value + 1, maxHint))}
         aria-label={increaseLabel}
-        className="sm-target flex w-11 items-center justify-center text-text disabled:pointer-events-none disabled:opacity-40 hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="sm-target flex w-11 items-center justify-center text-text disabled:pointer-events-none disabled:opacity-40 hover:bg-surface-subtle transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <Plus className="size-4" aria-hidden="true" />
       </button>

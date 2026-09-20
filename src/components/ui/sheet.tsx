@@ -31,6 +31,7 @@ const sheetContentVariants = cva("fixed z-50 border-border bg-surface p-6 shadow
     side: {
       bottom: "inset-x-0 bottom-0 max-h-[85vh] rounded-t-lg border-t",
       right: "inset-y-0 right-0 h-full w-full max-w-sm border-l",
+      left: "inset-y-0 left-0 h-full w-full max-w-sm border-r",
     },
   },
   defaultVariants: {

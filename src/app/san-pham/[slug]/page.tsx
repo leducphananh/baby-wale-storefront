@@ -138,49 +138,69 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           {/* No product image field exists yet — S3/S4 finding, no public
               image bucket (O3/F13). Every product shows the neutral
               placeholder frame until that ships. */}
-          <ProductGallery 
-            images={product.imageStoragePath ? [`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}`] : []} 
-            productName={product.name} 
-          />
+          <div className="rounded-3xl border border-border/80 p-2 shadow-soft bg-surface">
+            <ProductGallery 
+              images={product.imageStoragePath ? [`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}`] : []} 
+              productName={product.name} 
+            />
+          </div>
         </div>
 
-        <div className="flex flex-col gap-4 lg:w-1/2">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-product-pdp-name text-text">{product.name}</h1>
-            {product.brand ? <p className="text-body-sm text-text-muted">{product.brand}</p> : null}
+        <div className="flex flex-col gap-5 lg:w-1/2">
+          <div className="flex flex-col gap-2">
+            {product.brand && (
+              <div className="self-start">
+                <span className="text-primary font-bold uppercase tracking-wider bg-primary-tint/40 px-2.5 py-0.5 rounded-md text-xs">
+                  {product.brand}
+                </span>
+              </div>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-text leading-snug">{product.name}</h1>
           </div>
 
-          <Price amount={product.sellingPrice} role="lg" />
+          <div className="p-4 rounded-2xl bg-surface-subtle border border-border/80">
+            <Price amount={product.sellingPrice} role="lg" />
+          </div>
 
           <div className="flex items-center gap-3">
             <StockBadge inStock={product.inStock} />
-            {product.unit ? <span className="text-body-sm text-text-muted">{product.unit}</span> : null}
+            {product.unit ? <span className="text-sm font-medium text-text-muted">ĐVT: {product.unit}</span> : null}
           </div>
 
-          <ProductPurchasePanel
-            productId={product.productId}
-            slug={product.slug}
-            name={product.name}
-            unit={product.unit}
-            sellingPrice={product.sellingPrice}
-            inStock={product.inStock}
-            imageUrl={product.imageStoragePath ? `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}` : null}
-          />
+          <div className="pt-2">
+            <ProductPurchasePanel
+              productId={product.productId}
+              slug={product.slug}
+              name={product.name}
+              unit={product.unit}
+              sellingPrice={product.sellingPrice}
+              inStock={product.inStock}
+              imageUrl={product.imageStoragePath ? `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}` : null}
+            />
+          </div>
 
-          <div className="flex flex-col gap-1.5 rounded-md border border-border bg-surface-subtle p-4">
+          <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-subtle p-5 mt-4">
+            <span className="text-xs font-bold text-text mb-1">Cam kết từ Baby Wale:</span>
             {TRUST_COPY_LINES.map((line) => (
-              <p key={line} className="text-body-sm text-text">
-                {line}
-              </p>
+              <div key={line} className="flex items-start gap-2">
+                <div className="w-4 h-4 rounded-full bg-success-bg text-success flex items-center justify-center shrink-0 mt-0.5">
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <p className="text-xs text-text">
+                  {line}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
       {product.description ? (
-        <div className="flex flex-col gap-3 lg:max-w-3xl">
-          <h2 className="text-h2 text-text">Mô tả sản phẩm</h2>
-          <p className="text-body whitespace-pre-line text-text">{product.description}</p>
+        <div className="flex flex-col gap-3 lg:max-w-4xl bg-surface p-6 sm:p-8 rounded-3xl border border-border/80 shadow-soft">
+          <h2 className="text-xl font-bold text-text border-b border-border pb-3">Mô tả sản phẩm</h2>
+          <p className="text-sm leading-relaxed whitespace-pre-line text-text/90">{product.description}</p>
         </div>
       ) : null}
 

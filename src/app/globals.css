@@ -31,68 +31,54 @@
  */
 
 @theme {
-  /* ---- Colour tokens — S2.4 §4 (exact hex, do not adjust) ------------- */
-  --color-bg: #fbfaf8;
+  /* ---- Colour tokens — S15 UI Overhaul (from AI Studio Reference) ---- */
+  --color-bg: #fff7f1;
   --color-surface: #ffffff;
-  --color-surface-subtle: #f4f2ee;
-  --color-text: #1f2a37;
-  --color-text-muted: #5b6673;
-  --color-border: #e7e3dc;
+  --color-surface-subtle: #f5f8fc;
+  --color-text: #0d2b4e;
+  --color-text-muted: #64748b;
+  --color-border: #e6eef8;
 
-  --color-primary: #2563b0;
+  --color-primary: #0d2b4e;
   --color-primary-hover: #1e4e8c;
   --color-primary-pressed: #173f71;
-  --color-primary-tint: #eaf2fb;
+  --color-primary-tint: #b7d5f0;
 
-  --color-accent: #d64c7c;
-  --color-accent-tint: #fceef3;
-  --color-accent-text: #7a1f3d;
+  --color-accent: #ff8fa3;
+  --color-accent-tint: #ffe4e9;
+  --color-accent-text: #0d2b4e;
 
-  --color-success: #177a4e;
+  --color-success: #22c55e;
   --color-success-bg: #e7f4ee;
-  --color-warning: #8a560a;
+  --color-warning: #f59e0b;
   --color-warning-bg: #fbf1e1;
-  --color-danger: #b02e2e;
+  --color-danger: #ef4444;
   --color-danger-bg: #fbecec;
 
-  --color-focus: #1d6fe0;
+  --color-focus: #6fa8dc;
 
-  /* ---- Radius — S2.4 §7.1 (one scale, no pills, no exceptions) -------- */
+  /* ---- Radius — Reference design uses softer corners ---- */
   --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 1.25rem;
 
-  /* ---- Elevation — S2.4 §7.2 (one shadow language) --------------------
-   * `flat` is the ProductCard/default resting state — no shadow, so there is
-   * no `shadow-flat` utility to apply; simply omit a shadow class.
-   */
-  --shadow-raise: 0 1px 2px rgba(31, 42, 55, 0.06), 0 4px 12px rgba(31, 42, 55, 0.06);
-  --shadow-overlay: 0 8px 24px rgba(31, 42, 55, 0.1);
+  /* ---- Elevation — S15 Reference adds soft shadows ---- */
+  --shadow-soft: 0 2px 8px rgba(13, 43, 78, 0.06);
+  --shadow-card: 0 4px 16px rgba(13, 43, 78, 0.07);
+  --shadow-hover: 0 8px 24px rgba(13, 43, 78, 0.11);
+  --shadow-raise: 0 1px 2px rgba(13, 43, 78, 0.06), 0 4px 12px rgba(13, 43, 78, 0.06);
+  --shadow-overlay: 0 8px 24px rgba(13, 43, 78, 0.1);
 
-  /* ---- Typography family — Be Vietnam Pro (S2.4 §5, unchanged from S1) */
+  /* ---- Typography family — Nunito (from AI Studio reference) ---- */
   --font-sans:
-    var(--font-be-vietnam), ui-sans-serif, system-ui, -apple-system,
+    var(--font-nunito), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Arial, sans-serif;
 
-  /* ---- Desktop content container — S2.4 §9.1 --------------------------
-   * 1200px, NOT the 1440px canvas artboard frame. Generates `max-w-content`.
-   */
+  /* ---- Desktop content container — S2.4 §9.1 ---- */
   --container-content: 1200px;
-
-  /*
-   * Spacing (S2.4 §6): the frozen base scale — 2, 4, 8, 12, 16, 20, 24, 32,
-   * 40, 48, 64px — is Tailwind v4's *default* 4px spacing scale exactly
-   * (`--spacing: 0.25rem`, unmodified below). No override needed:
-   *   spacing 2  -> p-0.5   spacing 12 -> p-3   spacing 32 -> p-8
-   *   spacing 4  -> p-1     spacing 16 -> p-4   spacing 40 -> p-10
-   *   spacing 8  -> p-2     spacing 20 -> p-5   spacing 48 -> p-12
-   *                                              spacing 64 -> p-16
-   * Breakpoints (S2.4 §9.1): 768 / 1024 / 1280 are Tailwind's default
-   * md / lg / xl, unmodified. S2.4 defines no 768-below tier other than the
-   * <=374px "compact mobile" case, which is not a standard min-width
-   * breakpoint — see the `compact` custom variant below.
-   */
 }
 
 /*

@@ -125,7 +125,7 @@ function CartView() {
       <CartSummary
         subtotal={subtotal}
         selectedCount={selectedProductIds.length}
-        className="hidden rounded-md border border-border bg-surface p-4 lg:block lg:w-80 lg:shrink-0"
+        className="hidden rounded-3xl border border-border/80 bg-surface p-6 shadow-soft lg:block lg:w-80 lg:shrink-0"
       />
 
       {/* Mobile: the always-present sticky bottom bar is the only place the
