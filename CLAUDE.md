@@ -1,0 +1,686 @@
+# CLAUDE.md — Baby Wale Storefront
+
+Always-on project rules for the **new customer-facing Baby Wale storefront** (Next.js
+App Router). Detailed, topic-specific rules live in `.claude/skills/*/SKILL.md`; Claude
+Code loads a skill's full instructions when the task matches. This file is the short
+version that must never be forgotten, even when no skill fires. Sections marked
+**[always]** apply to every change, no exceptions.
+
+The authoritative architecture contract is
+[`docs/S0-requirements-and-architecture.md`](docs/S0-requirements-and-architecture.md)
+(the "S0 document"). This file summarizes and, where noted, **corrects** it. Do not
+rewrite the S0 document; reference it.
+
+---
+
+## 1. What this project is
+
+A **public, customer-facing e-commerce website** for Baby Wale — a mother & baby
+retailer (diapers, formula/milk, baby care). Guest browsing and guest checkout.
+
+**It is NOT the admin app.** The admin (`baby-store-web`, React + Vite) is a separate
+repo, a separate deploy, a trusted internal tool. The storefront shares only the
+Supabase backend. Never assume storefront code may touch or modify the admin repo
+(see §12, `storefront-architecture`).
+
+- Framework: **Next.js latest stable, App Router only, React Server Components by
+  default.** TypeScript strict.
+- Backend: the existing shared Supabase project. The storefront is a **lower-trust
+  client** than the admin and reaches data through a **narrow, explicit public
+  contract** only.
+- Deploy target: **Vercel** (MVP). Ubuntu home server is a future portable option, not
+  now.
+- Language: **Vietnamese** for all customer-facing text. Code stays English.
+
+**This is a public revenue surface.** Its attack surface, its handling of customer
+data, and the correctness of money and stock outrank visual polish. When rules
+conflict, resolve per §3.
+
+---
+
+## 2. Current phase — S8 complete (Order Success & Order Tracking); next is Admin Coordination (NOT started — see §11's roadmap note on renumbering)
+
+- **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
+- **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
+- **S1** — Next.js foundation — done. Root layout + placeholder home, `not-found` /
+  `error` / `robots`, `/api/health`, Zod-validated env, request-scoped anon Supabase
+  server client, Vitest + RTL. No business feature, no visual design, no design tokens.
+- **S2.1** — Information Architecture & User Flows — done
+  (`docs/design/S2.1-information-architecture-and-user-flows.md`): IA tree, page
+  inventory, navigation decision, all customer flows, price/stock recovery, error-state
+  inventory, accessibility, conceptual component + state inventory. Includes the
+  2026-09-10 approved refinements (two-tier sticky model; success-page save/share
+  action; tracking accepts a token or pasted URL; **D1–D3 locked**, D4 open).
+- **S2.2** — Visual Direction & Moodboard — **done**
+  (`docs/design/S2.2-visual-direction-and-moodboard.md`): three visual directions, a
+  comparison matrix, and a recommendation of **"Soft Trust Commerce"**; visual doctrine;
+  direction (not tokens) for color roles, typography (keep Be Vietnam Pro),
+  shape/elevation, photography, and every screen; anti-pattern list; structured
+  moodboard; S2.3 brief. **Documentation only — no code, no final tokens, no Figma
+  screens.**
+- **S2.3** (incl. the **S2.3R** review/correction pass) — High-Fidelity Design — **done**
+  (`docs/design/S2.3-high-fidelity-figma-design.md` + a Claude Design canvas **v3**:
+  `claude.ai/code/artifact/378cf72c-a832-4c2d-8e36-c6ac30c74640`): build-ready hi-fi
+  spec — **exploratory** token proposal (candidate hex, Be Vietnam Pro ramp,
+  spacing/radius/elevation, grid), ~30 components with states, per-screen layouts
+  (mobile 390 / desktop 1440), 4-tier completeness matrix, S2.4 handoff. Figma itself
+  was not usable (connected account is a Starter/View seat). **S2.3R** pixel-inspected
+  all 9 canvas artboards (headless Chrome, pre-installed) and fixed: unsupported
+  "chính hãng" hero claim (→ mock copy), cart-badge contrast (→ Trust Blue, ≥4.5:1
+  rule), 2 clipped artboards, 1 stretched control; recorded the 360px result and that
+  the 1:1 image frame is unvalidated (no real photos). **No production code, no
+  dependencies, no DB, no final tokens. DESIGN APPROVED remains OPEN.**
+- **S2.4** — Design System & Design Approval — **done. DESIGN APPROVED V1.**
+  (`docs/design/S2.4-design-system-and-approval.md` — **the authoritative design
+  source of truth**, overriding S2.1–S2.3R wording where they conflict, §18 of that
+  doc): frozen colour tokens (with recalculated contrast — the pink cart-badge is
+  permanently rejected as text/numeral background, ≥4.5:1 rule codified), frozen Be
+  Vietnam Pro type ramp, frozen 4px-base spacing incl. a ≤374px compact-mobile
+  adaptation (2 columns preserved, no 1-column fallback), frozen radius/elevation,
+  frozen control sizing, frozen 2/3/4-column responsive grid + sticky model, frozen
+  `ProductCard` / `Header` / Product Detail / Cart / Checkout / Success-Tracking design
+  contracts, a frozen content-claim contract (removed the unapproved "Giao hàng toàn
+  quốc" claim — including from the canvas itself, now **v4**; "chính hãng" and a
+  return-window remain gated), the 1:1 product-image frame approved for V1 with a
+  mandatory pre-S4 real-image validation checkpoint, an
+  icon direction (Lucide + matched custom SVGs, not installed), a Tailwind v4/shadcn
+  S2.5 implementation mapping, and a Design-Change Governance process. **No production
+  code, no dependencies, no DB change.**
+- **S2.5** — Design System Implementation — **done**
+  (`docs/design/S2.5-design-system-implementation.md`): every S2.4 token implemented
+  in `src/app/globals.css` (Tailwind v4 `@theme` for colour/radius/shadow/container;
+  typography roles as `@layer components` classes; Tailwind's default spacing scale
+  already matches S2.4's; a custom `compact` variant for the ≤374px tier), the S1
+  scaffold dark-mode block removed (light-only), `lucide-react` installed, and a
+  shadcn-style primitive set hand-built on Radix + CVA in `src/components/ui`
+  (`Button`, `Input`, `Textarea`, `Label`, `FormField`, `RadioGroup`, `Badge`,
+  `Skeleton`, `Separator`, `Dialog`, `Sheet`) plus layout/site primitives in
+  `src/components/layout` and `src/components/site` (`Container`, `Stack`, `Grid`,
+  `SectionHeading`, `EmptyState`, `ErrorState`, `Header`, `CartIndicator`). No
+  `ProductCard`/`PaymentRow`/`CategoryTile` (commerce scope, S3+). **No Supabase
+  calls, no migrations, no RPC, no S3+ route/business logic.**
+- **S3** — Public Catalog Data Contract — **done**
+  (`docs/storefront/S3-public-catalog-data-contract.md`): the storefront's first
+  Supabase-touching phase. Additive migration on the shared project (`products.slug`
+  / `categories.slug` + backfill, `products.is_web_visible boolean DEFAULT false`
+  per locked O1, a `slugify()` helper + admin-compat auto-slug trigger) and three
+  new `SECURITY DEFINER` functions — `list_storefront_categories`,
+  `list_storefront_products`, `get_storefront_product_by_slug` — implementing §5's
+  RPC-only architecture (no `anon` grant on any base table/view, ever). `in_stock`
+  is a boolean using the exact FEFO-safe predicate `complete_order()` uses (never an
+  exact quantity). Verified with real black-box PostgREST calls against the live
+  project (positive + 15 negative security tests — every admin/report RPC and every
+  base table 401s for `anon`; no existence-leak on a hidden product; no column-
+  widening via `?select=`). Found and fixed two real issues in-phase: a Supabase
+  default-privilege grant that silently gave `anon` EXECUTE on a helper function,
+  and an admin-compatibility break (`create-product.ts` would have failed a new
+  NOT NULL constraint) — both root-caused against the live database, not guessed.
+  Typed storefront data-access layer added (`src/features/catalog/`), zero
+  `select('*')`, zero `.from(...)`, zero catalog UI. **Migration applied live and
+  recorded in this repo's own `supabase/migrations/`; still needs manual copying
+  into `baby-store-web/supabase/migrations/` (Admin Coordination follow-up — not
+  done here, §14).**
+- **S4** — Catalog Browse / Homepage — **done**: the real customer-facing shell —
+  `SiteHeader`/`SiteFooter` wired into the root layout (every route), homepage (hero →
+  categories → "Sản phẩm mới" rail → S2.4 §15 trust copy), `/san-pham` listing
+  (`?danh-muc=`/`?trang=` search-param filter + pagination, category chips), the
+  canonical `/danh-muc/[slug]` category page (`notFound()` on an unknown slug), and
+  the `ProductCard`/`CategoryTile`/`StockBadge`/`Price`/`Pagination`/`ProductRail`
+  primitives (S2.4 §10.1/§10.9 contracts). Consumes only the S3 RPCs
+  (`list_storefront_categories`/`list_storefront_products`) — zero `.from(...)`, zero
+  `select('*')`, zero new migration. `selling_price = 0` renders **"Liên hệ"**, never
+  "0 ₫" (documented S4 presentation rule, `src/lib/format/money.ts`). No product image
+  bucket exists yet (S3 finding, still open) — every card shows the frozen neutral
+  placeholder frame. Cart icon is visually present (frozen Header anatomy) but
+  `count=0` and links to `/gio-hang`, which doesn't exist until S6 — a graceful 404,
+  not fake functionality; same reasoning for the disabled search field (no `p_search`
+  RPC parameter yet). No product detail page (S5) — `ProductCard`/rail links to
+  `/san-pham/[slug]` anyway (graceful 404 until S5 ships, not a dead/fake link).
+  Verified with real screenshots (390/320/1440px) against real (temporarily, then
+  reverted) visible catalog rows — found and fixed one real layout bug (price+badge
+  mid-word wrap on narrow cards) from that render, not just from code review.
+- **S5** — Product Detail — **done**: `/san-pham/[slug]`, the frozen S2.4 §10.3
+  hierarchy (breadcrumb → gallery → name → brand → price → stock → unit → quantity →
+  Add-to-Cart → trust → description → specification → "Sản phẩm liên quan"), sourced
+  entirely from `get_storefront_product_by_slug` (S3) — a hidden/archived/unknown slug
+  all `notFound()` identically. "Related" reuses `list_storefront_products` filtered
+  to the same category (no new RPC). Introduced the **first client cart state**
+  (`zustand`, `src/features/cart/store.ts`) — authorized explicitly by this phase's own
+  brief as "the minimum cart state infrastructure needed for the Product Detail CTA";
+  line shape matches `cart-state`'s frozen spec exactly, `cachedUnitPrice` is
+  display-only, never authoritative. `CartIndicator` now self-reads the live store
+  (still accepts an explicit `count` override, used by every existing test). The sticky
+  mobile Add-to-Cart bar (S2.4 §9.2/§10.3) uses a real `IntersectionObserver` on the
+  in-flow CTA — exactly one Add-to-Cart affordance is ever visible at a time, by
+  construction. OOS: button stays visible, disabled, labelled "Hết hàng" (never
+  hidden), quantity disabled. Quantity has **no inventory-backed max** (only a soft
+  UX ceiling) — real enforcement is S6/S7. No product image field/bucket exists yet
+  (same S3/S4 finding) — gallery always shows the neutral placeholder; **zero**
+  Storage requests as a direct consequence, which also means the phase brief's
+  "recently identified elevated Supabase Storage Egress" premise could not be found
+  anywhere in this repo's history and is architecturally impossible today (no public
+  bucket exists to generate egress from) — noted, not silently accepted. Extracted the
+  3×-duplicated trust copy into `src/lib/content/trust-copy.ts` (footer, homepage, PDP)
+  to remove a real copy-drift risk. Verified with real screenshots (320/390/1440px)
+  against real (temporarily visible, then reverted) in-stock and out-of-stock products.
+  Zero new migration, zero `.from(...)`, zero `select('*')`.
+- **S6** — Shopping Cart — **done**: `/gio-hang`, built entirely on the S5 Zustand
+  store (extended, not replaced) — added `incrementQuantity`/`decrementQuantity` (the
+  cart page's own quantity controls; `decrementQuantity` at quantity 1 **removes the
+  line**, a real business rule `setQuantity` alone can't express) and
+  `selectCartSubtotal` (`Σ(quantity × cachedUnitPrice)`, display-only). Added a
+  `persist` `merge` step that sanitizes whatever was actually in `localStorage`
+  (missing `productId` → dropped; invalid/negative/NaN/Infinity quantity or price →
+  coerced to a safe default; duplicate `productId`s → merged) — a customer can hand-
+  edit `localStorage` and the storefront must not crash on it. `CartItemRow` reuses
+  `QuantitySelector`, extended with two purely-additive, opt-in props
+  (`itemLabel` for per-product accessible names; `onDecrementBelowMin` for the
+  remove-at-1 rule) — every existing Product-Detail usage/test is byte-for-byte
+  unchanged. `Price` gained `treatZeroAsUnavailable={false}` for aggregate totals —
+  a cart/order subtotal must show a genuine "0 ₫", never "Liên hệ" (money.ts's own
+  documented product-price-vs-aggregate distinction, exercised for the first time
+  here). Totals use S2.4 §10.4's frozen terminology exactly — "Tạm tính (hàng hoá)",
+  "Phí vận chuyển: Nhân viên sẽ xác nhận", "Tổng tiền hàng" (never "Tổng thanh toán"
+  while shipping stays unresolved, CLAUDE.md §8) — which the phase's own brief
+  under-specified; followed the already-frozen contract over the newer prompt.
+  Mobile gets an unconditional sticky bottom Checkout bar (S2.4 §9.2's Cart row, no
+  scroll-trigger — unlike Product Detail's conditional one); desktop shows the same
+  CTA inline in a non-sticky summary panel (S2.4 never froze a sticky desktop cart
+  summary). "Tiến hành đặt hàng" only navigates to `/thanh-toan` (not built until
+  S8 — a graceful 404 today, the same pattern already used for `/gio-hang` before S6
+  and `/san-pham/[slug]` before S5) — **zero** checkout/order logic anywhere in this
+  phase. **Zero Supabase calls of any kind** — grep-confirmed no `.from(...)`,
+  `createClient`, or `supabase.rpc` anywhere in `src/features/cart/` or
+  `src/app/gio-hang/`; the phase brief's premise of a Supabase egress-quota problem
+  could not be verified from this repo (same pattern as S5's unverifiable egress
+  claim) and is moot for cart operations regardless, since none of them can reach
+  the network. Zero new dependency (zustand already existed since S5), zero new
+  migration. 151 tests total (40 new/changed this phase).
+- **S7** — Storefront Checkout + Storefront Order Backend Contract — **done**
+  (`docs/storefront/S7-storefront-checkout-and-order-backend-contract.md`): the
+  storefront's first **write** path. An additive migration (S0 F6–F11) added nine
+  columns to `orders` (`source`, `customer_name_snapshot`/`customer_phone_snapshot`/
+  `shipping_address_snapshot`, `recipient_name`, `shipping_fee`, `tracking_token_hash`,
+  `idempotency_key`, `payment_method`) and two new `SECURITY DEFINER` functions —
+  `create_storefront_order()` and `get_storefront_order_by_token()`. Inspected the
+  live `create_order()`/`complete_order()` bodies before writing anything: found that
+  `create_order()` auto-completes (calls `complete_order()` inline), which is exactly
+  why the storefront needed a genuinely separate function that stops at
+  `status = 'draft'`, `source = 'website'` and never allocates stock or becomes
+  revenue (CLAUDE.md §6, S0 O2) — reusing only the *patterns* (the `order_number`
+  advisory-lock generator, the FEFO-safe stock predicate) verbatim from the live code,
+  never re-derived. Every RLS policy on `orders`/`order_items`/`customers` is
+  `TO authenticated` only (verified live) — `SECURITY DEFINER` is the only guest-write
+  mechanism, not a convenience choice. Server always re-prices every line from
+  `products.selling_price`; a live black-box price-tampering test (`p_items[0].
+  unit_price: 1` sent by `anon`) confirmed it's silently ignored. Idempotent on a
+  client-generated key (`orders.idempotency_key UNIQUE`) — a replay or a genuine
+  concurrent double-submit both resolve to the original order's confirmation, never a
+  duplicate; the plaintext `tracking_token` (only its SHA-256 hash is ever persisted,
+  CLAUDE.md §6) cannot be re-shown on replay — a disclosed, deliberate limitation, not
+  silently glossed over. Full negative security suite re-run live (anon 401s on direct
+  `orders`/`customers`/`product_batches` access; an unknown/malformed tracking token
+  returns `null`, no existence leak). Found and fixed two real issues in-phase, both
+  from live testing, not code review: a `FOR SHARE`-with-aggregate SQL error the stock
+  check couldn't have hit under review alone, and a `completed`-status label
+  conflict between S0 Part E7's wording and S2.4 §10.8's frozen one (S2.4 wins, same
+  precedent as S6's totals terminology). Built `/thanh-toan` (RHF + Zod checkout form,
+  `PaymentRow` per S2.4 §10.6, a `/api/cart/revalidate` pre-submit price/stock check
+  reusing the existing S3 RPC, `/api/checkout` calling the new RPC) and
+  `/dat-hang-thanh-cong` (S2.4 §10.7 — "ORDER RECEIVED" framing only, a
+  `sessionStorage`-held confirmation, never the URL). Known, disclosed limitations:
+  checkout renders inside the normal global header rather than S2.4 §10.5's frozen
+  "slim header" (would require a root-layout restructure beyond this phase's scope);
+  `get_storefront_order_by_token()` has no consuming tracking page yet (S9); no live
+  screenshot of a populated-cart checkout form (same no-Puppeteer limitation as S6,
+  compensated by 50 new Vitest/RTL tests with real `user-event` interaction — 201
+  tests total, up from 151). Added `react-hook-form` + `@hookform/resolvers` (S0 §10
+  explicitly authorizes RHF+Zod for checkout). Zero payment gateway, zero customer
+  accounts, zero admin UI change, zero inventory-reservation subsystem.
+- **S8** — Order Success & Order Tracking — **done**
+  (`docs/storefront/S8-order-success-and-tracking.md`): completes the customer-facing
+  lifecycle after S7's checkout, with **zero database schema change** —
+  `get_storefront_order_by_token()` (S7) was already safe and sufficient and is
+  consumed as-is. Re-reading `docs/design/S2.1-information-architecture-and-user-
+  flows.md` §11–§12 (not assumed from S7's own report) confirmed tracking is
+  token-only (a raw token or a pasted tracking URL — never `order_number` + phone,
+  which S0 B13 explicitly rejects as an enumeration risk) and independently
+  reconfirmed the `completed` → "Đơn hàng đã được xác nhận" label S7's fix migration
+  already chose. Added exactly one new server endpoint, `/api/orders/lookup` (POST
+  `{token}`), which always returns `{order: null}` for a malformed, empty, *or*
+  unknown token — the identical shape in every case, so a lookup attempt can never
+  distinguish "bad input" from "no such order" (S2.1 §11.2). Built a shared
+  `OrderDetailView` (order number, the already-mapped status label, payment method +
+  a method-specific helper — **never** a paid/unpaid badge, S2.1 §12.2 — historical
+  item prices from the order itself, never re-fetched from `products.selling_price`,
+  and the frozen three-line totals format) reused by both the enriched success page
+  and the new `/tra-cuu-don-hang` tracking page, matching S2.1 §11.2's "same read-only
+  order view" requirement. `OrderSuccessView` now makes exactly one additional lookup
+  call (using the tracking token it just received) to render that full view instead
+  of the S7 minimal confirmation alone — falling back to the minimal view if that
+  token is unavailable (an idempotent replay) or the lookup fails, a disclosed
+  limitation, not a crash. Fixed a real S7 bug in passing: the copied tracking link
+  pointed at a placeholder path (`/don-hang/theo-doi`) that never existed; it now
+  points at the real `/tra-cuu-don-hang?token=...`. Wired the header's already-built-
+  but-unwired `trackOrder` slot, the mobile hamburger drawer, and the footer with
+  real `/tra-cuu-don-hang` links (S2.1 §5). CTA hierarchy on the success page follows
+  S2.4 §10.7 / S2.1 §11.1 exactly (primary: copy tracking link; secondary: continue
+  shopping) over the S8 brief's own restated example, which inverted it — the same
+  "frozen design doc wins" precedent as S6/S7. Real end-to-end verification against
+  the live database (one temporary test order created, looked up three ways —
+  raw token, a URL-wrapped token, and a bogus token — through the actual `/api/orders/
+  lookup` route, then cleaned up) plus 236 passing tests (35 new). Repo-wide grep
+  confirmed zero `service_role`, zero `select('*')`, zero direct `.from(...)` table
+  access anywhere in the new code — the RPC call is the only Supabase touchpoint.
+  Known, disclosed limitations: no live screenshot of the tracking page's *async*
+  found/not-found result (same no-Puppeteer gap as S5–S7, compensated by a real
+  live-server curl verification and the new tests); no rate limiting (S12/S13, token
+  entropy — 192 bits — makes brute-forcing impractical today); the S7 idempotent-
+  replay token-loss and normal-header-instead-of-slim-header limitations are
+  unchanged (S8 did not touch either, per its own explicit instructions not to).
+- **Next: Admin Coordination** (mirroring the S3 and S7 migrations into
+  `baby-store-web/supabase/migrations/`, still not done in either phase) or **Online
+  Payment**, whichever the user prioritizes. **Not started.** Do not begin further
+  work until asked.
+
+**The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
+Implementation must not casually change: primary colour, accent use, type scale, radius
+language, shadow language, container width, `ProductCard`, the header system, the
+checkout visual model, mobile navigation, or primary-CTA hierarchy (S2.4 §19). A real
+issue found during implementation is raised as a **Design Deviation Proposal** (S2.4
+§19), not a silent code fix.
+
+### Stack & commands (as of S1)
+
+- Next.js **16.3.4** (App Router, Turbopack), React **19.2.8**, TypeScript **5** strict,
+  Tailwind CSS **v4** (CSS-config), ESLint **9** (`eslint-config-next`).
+- Package manager: **Yarn 1.22.22** (`yarn.lock`). Do not add a second lockfile.
+- Node **>= 20.9** (developed on 22.17).
+- Supabase: `@supabase/ssr` + `@supabase/supabase-js`, anon key only. `zod` for env
+  and (later) validation. **No `service_role`, ever.** No TanStack Query — still not
+  needed.
+- Cart state (added S5, extended S6): `zustand` — `src/features/cart/store.ts`,
+  client-only, display state (`cart-state` skill). `/gio-hang` (S6) is the full cart
+  page.
+- Checkout (added S7, extended S8): `react-hook-form` + `@hookform/resolvers` (S0 §10
+  — interactive-form validation only, client-side UX layer). `src/features/checkout/`
+  (schema, error-map, tracking helpers, `/thanh-toan` + order-success + tracking
+  components — incl. the shared read-only `OrderDetailView`), `src/app/api/cart/
+  revalidate/` + `src/app/api/checkout/` + `src/app/api/orders/lookup/` (S8) (Route
+  Handlers — server/RPC boundary, never a direct browser → Supabase write).
+  `/thanh-toan`, `/dat-hang-thanh-cong`, and `/tra-cuu-don-hang` (S8) are the full
+  checkout + order-success + order-tracking pages.
+- Design system (added S2.5): `lucide-react`, `class-variance-authority`, `clsx`,
+  `tailwind-merge`, `@radix-ui/react-{slot,dialog,radio-group,separator,label}`. No
+  `shadcn` CLI/`components.json` — the `src/components/ui` primitives follow the same
+  pattern (owned code, not an installed package) so the CLI can extend them later.
+- Scripts: `yarn dev` · `yarn build` · `yarn start` · `yarn lint` · `yarn typecheck`
+  (`tsc --noEmit`) · `yarn test` (`vitest run`) · `yarn test:watch`.
+- Key paths: `src/app/` (routes, incl. the design tokens in `globals.css`),
+  `src/lib/env.ts` (validated public env), `src/lib/supabase/server.ts` (server anon
+  client, typed `<Database>`), `src/lib/utils.ts` (`cn()`), `src/types/database.ts`
+  (generated Supabase types, regenerated independently of the admin repo — S0 C11),
+  `src/components/ui/` (themed primitives), `src/components/layout/` +
+  `src/components/site/` (layout/header primitives), `src/features/catalog/` (S3
+  public catalog data-access layer + DTOs), `src/features/cart/` (client cart store,
+  S5; full `/gio-hang` UI, S6), `src/features/checkout/` (S7 — schema/error-map/DTOs;
+  S8 — tracking helpers/`OrderDetailView`; `/thanh-toan` + order-success + tracking
+  components), `src/app/api/cart/revalidate/` + `src/app/api/checkout/` (S7) +
+  `src/app/api/orders/lookup/` (S8) (Route Handlers), `src/lib/content/` (shared
+  customer-facing copy, e.g. trust-copy.ts), `supabase/migrations/` (this repo's own
+  record of what it applied to the **shared** project — see §2 S3 for the
+  admin-repo-coordination caveat), `src/test/` (test setup), `vitest.config.mts`
+  (aliases `server-only` to a test stub — see `src/test/stubs/server-only.ts`). Env:
+  `.env.example` (committed placeholders), `.env.local` (gitignored, already points
+  at the real shared project). Feature folders (`src/features/*`) appear when
+  features are built.
+- Run `yarn lint && yarn typecheck && yarn test && yarn build` at the end of every
+  phase (§12).
+
+---
+
+## 3. Priority order [always]
+
+When rules or goals conflict, prioritize in this order:
+
+1. **Security** — no secrets exposed, no RLS bypass, no trust of browser input, no
+   privileged key on the storefront.
+2. **Business correctness** — money, stock, order status, and lifecycle match real
+   store operations and the backend invariants in §6.
+3. **Data integrity** — orders/inventory/payments never end in a partial or
+   inconsistent state; one atomic transaction per business operation.
+4. **Customer privacy** — never expose one customer's data to another; minimal PII;
+   unguessable identifiers.
+5. **Checkout correctness** — authoritative pricing, stock validation, idempotency,
+   never charge a stale/tampered total.
+6. **Public data minimization** — expose only the explicit storefront DTO; nothing
+   internal (COGS, purchase price, batches, suppliers, staff, reports).
+7. **SEO correctness** — server-rendered content, correct canonical/metadata/sitemap,
+   private pages `noindex`.
+8. **Accessibility** — a design constraint from day one, not cleanup.
+9. **Mobile-first UX** — the ~390px experience of browse → cart → checkout is the
+   primary target.
+10. **Performance** — minimal client JS, RSC by default, no N+1, correct caching.
+11. **Visual consistency** — one design system; feature pages extend it, never fork it.
+12. **Maintainability** — focused files, right layer, no duplicated business rules.
+13. **Development speed** — last, never at the expense of 1–6.
+
+Never sacrifice security, money/stock correctness, or customer privacy to ship faster.
+If the architecture cannot guarantee a critical property, **stop and report** rather
+than shipping a fragile version.
+
+---
+
+## 4. Storefront trust model [always]
+
+**The browser is untrusted.** Never trust a browser-submitted value for any of:
+
+price · subtotal · total · discount · order status · payment status · purchase price ·
+batch IDs · COGS · unit cost · stock quantity · shipping fee / shipping accounting
+result.
+
+The browser **may** submit: product ID · quantity · customer contact info · shipping
+info · selected payment method · idempotency key · slug / search / filter params.
+
+**All authoritative financial and inventory decisions happen server-side / in the
+database** (`create_storefront_order()` and the public read RPCs — designed in S0,
+built in S6). The Next.js server is **not** automatically trusted enough to hold a
+`service_role` key — see §7.
+
+See `checkout-security`, `frontend-storefront-security`, `public-data-contract`.
+
+---
+
+## 5. Data-access architecture [always]
+
+```
+Catalog (home, listing, product, category)
+    RSC → server Supabase client (anon key) → purpose-built public read RPC → safe DTO
+
+Cart
+    client only — Zustand + persist/localStorage (display state, non-authoritative)
+
+Checkout
+    client → Next.js Route Handler → transactional Postgres RPC (create_storefront_order)
+
+Order lookup
+    RSC / Route Handler → safe lookup RPC (get_storefront_order_by_token), no-store
+```
+
+- **Direct browser → Supabase is not the default.** No client `supabase.from(...)`
+  without an explicit, documented architecture reason.
+- **CORRECTION to S0 Part E (public data boundary).** The S0 document proposed
+  `security_invoker` views plus `anon` RLS/`SELECT` on base tables
+  (`products`, `categories`, `product_batches`). **Do not freeze that.** The storefront
+  standard is: **Next.js RSC → server anon client → purpose-built public read RPC
+  (`SECURITY DEFINER`) → storefront-safe DTO.** No public base-table `SELECT` is
+  required unless a much later phase proves a very strong reason and it passes security
+  review.
+  - **`product_batches` must never be directly queryable by anonymous users.** The
+    storefront does not expose exact batch stock, expiration dates, purchase price, lot
+    numbers, or any inventory internals. Availability is a **boolean/label** derived
+    server-side (`Còn hàng` / `Hết hàng`).
+  - **Built at S3:** `list_storefront_categories()`, `list_storefront_products(...)`,
+    `get_storefront_product_by_slug(...)` — `SECURITY DEFINER`, `anon`-executable,
+    zero table/view grant to `anon` anywhere (verified with real black-box PostgREST
+    negative tests, `docs/storefront/S3-public-catalog-data-contract.md`).
+  - **Still conceptual (S7):** `create_storefront_order(...)`,
+    `get_storefront_order_by_token(...)`. Each returns **only** the explicit
+    storefront-safe contract.
+
+See `nextjs-data-access`, `public-data-contract`, `supabase-storefront`,
+`nextjs-cache-correctness`.
+
+---
+
+## 6. Backend invariants the storefront MUST preserve [always]
+
+The storefront shares the admin's Supabase backend. It must **never weaken** admin
+hardening (all admin policies are `TO authenticated`; `anon` currently has nothing).
+
+- **Inventory source of truth is `product_batches.remaining_quantity`.** Never
+  introduce `products.stock` or any second stock number. The storefront **never**
+  mutates inventory.
+- **The storefront never calls** `complete_order`, `cancel_order`, `adjust_inventory`,
+  `confirm_import_receipt`, or any admin/report RPC. **Customer checkout must not
+  complete an order.**
+- **Only `completed` orders are revenue / reporting reality.** A website checkout
+  creates an `orders` row with `status = 'draft'` and `source = 'website'` — it does
+  **not** deduct stock, is **not** revenue, is **not** a completed order.
+- **COGS stays server-authoritative.** Never expose `order_item_batches.unit_cost`,
+  `product_batches.purchase_price`, or `products.default_purchase_price` to the
+  storefront in any form.
+- **Historical order data is never rewritten by the storefront.** `order_items`
+  price/quantity are historical snapshots.
+- **Money is integer VND.** Never floating point for any authoritative money math.
+  Client formatting is presentation only.
+- **Business timezone is `Asia/Ho_Chi_Minh`.** DB timestamps stay UTC; business
+  date/expiry semantics must preserve Vietnam date behavior.
+- **Supplier ≠ Distributor.** `distributor` may be public product metadata.
+  `supplier` / all purchasing data is internal — never exposed.
+
+Never expose storefront access to: `suppliers`, `import_receipts`,
+`import_receipt_items`, `purchase_invoices`, `purchase_invoice_files`,
+`inventory_transactions`, `order_item_batches`, internal reports, alert internals,
+staff `profiles`, internal notes, purchase prices, COGS.
+
+Never expose another customer's name, phone, address, email, or order details. Guest
+order lookup uses an **unguessable token** (store only its hash), never a sequential
+`order_number` alone.
+
+---
+
+## 7. Supabase / server security [always]
+
+- Storefront Supabase access uses the **anon / publishable key only**, via a
+  per-request server client (`@supabase/ssr`) in RSC and Route Handlers.
+- Privileged work is done by **purpose-built `SECURITY DEFINER` RPCs** with a fixed
+  `search_path`, explicit `GRANT`/`REVOKE`, server-side validation, and minimal return
+  data.
+- **`service_role` must not exist in normal storefront architecture** — not in the
+  browser, not on the Next.js server. If a future feature genuinely needs privileged
+  server access it must be explicitly justified, server-only, narrow, reviewed, and
+  **never** exposed via `NEXT_PUBLIC_*`.
+- Public env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public by
+  design). Any future secret is unprefixed and server-only. Never reuse production
+  credentials in tests/CI.
+
+See `supabase-storefront`, `frontend-storefront-security`.
+
+---
+
+## 8. Shipping-fee semantics — NOT finalized [always]
+
+The admin financial model computes `orders.total` from order line totals.
+`shipping_fee` is **not** financially integrated today.
+
+For MVP architecture:
+
+- The storefront may display: **"Phí vận chuyển sẽ được nhân viên xác nhận"**.
+- The checkout **product subtotal is the authoritative merchandise subtotal**; the
+  displayed total is goods-only.
+- Do **not** silently fold shipping into product prices. Do **not** treat
+  `shipping_fee` as product revenue/profit.
+- Do **not** change `complete_order` or any report to fold `shipping_fee` into `total`
+  without a coordinated admin + backend review (S9/S10).
+- Shipping accounting semantics are a **known deferred decision** — finalized during
+  the admin coordination / backend phase.
+
+---
+
+## 9. Locked S0 business decisions [always]
+
+Approved unless a future user instruction explicitly changes them.
+
+| # | Decision |
+| --- | --- |
+| **O1** | Product web visibility uses `products.is_web_visible` (recommended eventual default `false`). A product may be active internally but not published. **Never auto-publish every active product.** |
+| **O2** | Website order lifecycle reuses `orders.status = 'draft'` + `orders.source = 'website'`. No `pending_confirmation` status unless later required. Customer label: **"Đơn mới – chờ xác nhận"**. Draft web orders don't reduce inventory, aren't revenue, aren't completed. |
+| **O3** | Admin private image bucket stays **private**. A separate public storefront delivery bucket is added later, coordinated with admin. Never make the admin bucket public. |
+| **O4** | Shipping fee confirmed by staff (see §8). Not financially integrated yet. |
+| **O5** | Deploy on **Vercel** for MVP. Ubuntu home server is a future portable option. |
+| **O6** | Best sellers: **not MVP.** Defer unless explicitly requested (needs a public-safe aggregate, never the internal report RPCs). |
+| **O7** | Customer cancellation: **contact the store.** No self-service cancellation in MVP. |
+| **O8** | Bank account details: not required yet; user will provide later. |
+| **O9** | Use a dedicated Supabase **staging** project before real web orders, if practical. |
+| **O10** | Customer authentication / RBAC is **not MVP.** Before customer Supabase Auth is enabled, admin authorization must stop treating generic `authenticated` membership as staff authorization (move to a dedicated staff/`admin_members` table + RLS against it; `customers.auth_user_id` later). **`profiles.role` is self-editable and must never become authorization-bearing.** |
+
+---
+
+## 10. State & data libraries [always]
+
+- **RSC handles initial server state.** TanStack Query is **not** a default storefront
+  dependency. Add it only if a real client-side server-state use case appears (e.g.
+  order-status polling). Never mirror RSC-fetched data into TanStack Query.
+- **Zustand** is expected **primarily for the cart and cart-drawer / client UI state.**
+  Do not store server records globally in Zustand.
+- **Catalog state** (`search`, `category`, `sort`, `page`) lives primarily in **URL
+  search params**, not Zustand — shareable, back-button-correct, SSR-friendly,
+  crawlable.
+- **RHF + Zod** for interactive forms (checkout, order lookup). Client validation = UX;
+  server validation = mandatory; DB constraints = business authority.
+
+---
+
+## 11. Design roadmap [always]
+
+```
+S0    Requirements & Architecture              ✅
+S0.5  Claude Code Foundation & Storefront Skills ✅
+S1    Next.js Foundation                       ✅
+
+S2    UX & Visual Design
+  S2.1  Information Architecture & User Flows  ✅
+  S2.2  Visual Direction & Moodboard            ✅
+  S2.3  High-Fidelity Design                    ✅
+  S2.3R Visual Review & Corrections             ✅
+  S2.4  Design System & Design Approval         ✅  DESIGN APPROVED V1
+
+════════════════  DESIGN APPROVED GATE — CLOSED  ════════════════
+
+S2.5  Design System Implementation (Tailwind v4 + shadcn-style UI primitives) ✅
+
+S3    Public Catalog Data Contract              ✅
+
+S4    Catalog Browse / Homepage              ✅
+
+S5    Product Detail                          ✅
+
+S6    Shopping Cart                           ✅
+
+S7    Storefront Checkout + Order Backend Contract ✅
+      (consolidates the roadmap's original S7 "Order Backend Contract" and
+      S8 "Checkout" into one delivered phase — see CLAUDE.md §2 and the S7
+      completion doc)
+S8    Order Success & Order Tracking ✅
+      (the roadmap's original S9 content, delivered under the label "S8" —
+      see CLAUDE.md §2 and the S8 completion doc; zero DB change, reuses
+      S7's get_storefront_order_by_token() as-is)
+
+Admin Coordination   ← next (mirror the S3 + S7 migrations into baby-store-web)
+Online Payment
+Customer Account / RBAC
+SEO, Security, Testing & Production Hardening
+```
+
+The remaining roadmap items are intentionally unnumbered here rather than force-fit
+into the original S9–S13 slots, which this phase's own renumbering has already
+diverged from — pick whichever the user prioritizes next.
+
+No feature UI implementation beyond project foundation begins before the **S2 design
+approval gate** where relevant.
+
+### Design approval gate — CLOSED (frozen at S2.4)
+
+The approved design (`docs/design/S2.4-design-system-and-approval.md`) is now a
+**visual contract**. Implementation must not casually: change visual direction; invent
+a different typography system; introduce unrelated colors; change global radius/shadow
+language; redesign `ProductCard` independently; redesign checkout independently.
+**Changes to approved visual foundations require a Design Deviation Proposal (S2.4
+§19) and explicit user approval.**
+
+Final visual tokens (colors, spacing, radii, type scale) are now **frozen in
+`docs/design/S2.4-design-system-and-approval.md`** — that document is authoritative
+over any earlier exploratory value in S2.1–S2.3R. Skills describe *how to follow* the
+approved tokens; they do not restate the token table.
+
+---
+
+## 12. Phase discipline [always]
+
+- **Inspect before changing.** Read this file, the relevant skills, the existing repo
+  structure, the S0 document, and (once it exists) the DB schema/types/RLS for the area
+  you touch — every time.
+- **Implement only the current phase.** Do not auto-start the next phase. Do not add
+  speculative features. Do not do broad refactors that the phase didn't ask for.
+- **Report DB changes and new dependencies explicitly** in the completion report.
+- **Run verification once the project exists** (`lint` / `typecheck` / `test` /
+  `build`) at the end of every phase; never claim completion if your own changes break
+  them.
+- **Produce a completion report** at the end of each phase (phase, features, files
+  created/modified/deleted, DB changes or "none", dependencies or "none", architecture
+  decisions, verification output, known limitations, recommended next phase) — then
+  **stop** and wait to be asked.
+
+---
+
+## 13. Database change discipline [always]
+
+The storefront's phases may later trigger **shared backend** migrations (they affect
+both apps). When they do:
+
+- Migrations are **additive** unless a destructive change is explicitly approved.
+- **Never** reset a live Supabase project. Never drop tables, rename important columns,
+  change historical relationships, or cascade-delete business data.
+- **Never silently weaken RLS.** Every widening of public/`anon` access requires an
+  explicit security review and is reported in the phase's completion report.
+- Migration files stay reproducible. Admin compatibility is always considered.
+- **S0.5 applies ZERO migrations.**
+
+---
+
+## 14. Cross-repo rule [always]
+
+Storefront and admin are **separate repos**. Storefront Claude must not assume it can
+modify the admin. If a storefront phase requires an admin change, **document it as an
+Admin Coordination task** (S10 is the primary Admin Coordination phase) — never
+silently alter the other repo.
+
+---
+
+## 15. Brand assets [always]
+
+Reuse existing Baby Wale brand assets when supplied. **Do not regenerate the logo**
+unless explicitly requested. Do not fabricate brand assets.
+
+---
+
+## 16. Skills index
+
+`.claude/skills/` — focused, non-overlapping, actionable rules. Read the matching skill
+before writing code in its area.
+
+**Architecture:** `storefront-architecture`, `nextjs-app-router`,
+`nextjs-server-components`, `nextjs-data-access`, `nextjs-cache-correctness`.
+**Backend / data contract:** `public-data-contract`, `supabase-storefront`.
+**Checkout / cart:** `checkout-security`, `cart-state`.
+**Domain:** `baby-wale-domain`.
+**SEO / images / performance:** `nextjs-seo`, `next-image-storefront`,
+`storefront-performance`.
+**Design:** `storefront-ui-design`, `design-system`, `figma-to-code`,
+`visual-consistency`, `ecommerce-ux`, `mobile-first-storefront`, `accessibility`.
+**Forms / errors:** `react-hook-form-zod`, `storefront-error-handling`.
+**Security:** `frontend-storefront-security`.
+**Testing:** `testing-nextjs-storefront`.
+**Quality:** `typescript`, `clean-code`, `code-review`.
+**Vietnamese commerce:** `vietnamese-ecommerce-ui`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
