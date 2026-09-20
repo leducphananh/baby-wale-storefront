@@ -60,6 +60,8 @@ interface CartState {
   toggleAllSelection: (selected: boolean) => void;
   clearSelected: () => void;
   clear: () => void;
+  isCartDrawerOpen: boolean;
+  setCartDrawerOpen: (isOpen: boolean) => void;
 }
 
 /** Integer, >= 1 — matches every quantity rule used across the storefront. */
@@ -124,6 +126,8 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       lines: [],
       selectedProductIds: [],
+      isCartDrawerOpen: false,
+      setCartDrawerOpen: (isOpen) => set({ isCartDrawerOpen: isOpen }),
 
       addItem: (input) =>
         set((state) => {

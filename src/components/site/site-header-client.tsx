@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useCartStore, selectCartCount } from '@/features/cart/store';
 import { createClient } from '@/lib/supabase/client';
+import { env } from "@/lib/env";
 
 export function SiteHeaderClient({ categories, user }: { categories: any[]; user: any }) {
   const router = useRouter();
@@ -115,7 +116,7 @@ export function SiteHeaderClient({ categories, user }: { categories: any[]; user
               className="hover:text-secondary transition-colors flex items-center gap-1"
             >
               <PhoneCall className="w-3 h-3 text-secondary" />
-              Hotline: 1900 8899
+              Hotline: {env.NEXT_PUBLIC_STORE_HOTLINE}
             </button>
           </div>
         </div>
@@ -374,9 +375,7 @@ export function SiteHeaderClient({ categories, user }: { categories: any[]; user
             {/* Cart Trigger */}
             <button
               onClick={() => {
-                // Because QuickCartDrawer wraps the layout, we can trigger it or just route to cart.
-                // We'll just route to cart for now.
-                router.push('/gio-hang');
+                useCartStore.getState().setCartDrawerOpen(true);
               }}
               className="relative p-2.5 sm:px-3.5 sm:py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl flex items-center gap-2 transition-transform active:scale-95 shadow-sm"
               aria-label="Mở giỏ hàng"
@@ -453,11 +452,11 @@ export function SiteHeaderClient({ categories, user }: { categories: any[]; user
           <div className="pt-6 border-t border-border text-xs text-muted-foreground space-y-2">
             <p className="flex items-center gap-1.5 font-bold text-primary">
               <PhoneCall className="w-3.5 h-3.5 text-secondary" />
-              Tổng đài tư vấn: 1900 8899 (8h00 - 21h30)
+              Tổng đài tư vấn: {env.NEXT_PUBLIC_STORE_HOTLINE}
             </p>
             <p className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-accent" />
-              Showroom: 120 Hai Bà Trưng, Quận 1, TP.HCM
+              Showroom: {env.NEXT_PUBLIC_STORE_ADDRESS}
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { CartDrawer } from "@/features/cart/components/cart-drawer";
 import { env } from "@/lib/env";
 
 import "./globals.css";
@@ -68,6 +69,7 @@ export default function RootLayout({
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <CartDrawer />
       </body>
     </html>
   );

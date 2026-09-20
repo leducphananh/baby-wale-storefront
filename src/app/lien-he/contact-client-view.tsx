@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Building,
 } from "lucide-react";
+import { env } from "@/lib/env";
 
 export function ContactClientView() {
   const [formData, setFormData] = useState({
@@ -290,10 +291,10 @@ export function ContactClientView() {
                 </div>
                 <div>
                   <span className="text-muted-foreground block text-[11px]">Tổng đài miễn cước</span>
-                  <a href="tel:19008899" className="font-extrabold text-base text-primary hover:underline">
-                    1900 8899
+                  <a href={`tel:${env.NEXT_PUBLIC_STORE_HOTLINE.replace(/\s+/g, "")}`} className="font-extrabold text-base text-primary hover:underline">
+                    {env.NEXT_PUBLIC_STORE_HOTLINE}
                   </a>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">8:00 - 21:30 hàng ngày</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{env.NEXT_PUBLIC_STORE_HOURS}</p>
                 </div>
               </div>
 
@@ -303,8 +304,8 @@ export function ContactClientView() {
                 </div>
                 <div>
                   <span className="text-muted-foreground block text-[11px]">Email Chăm sóc khách hàng</span>
-                  <a href="mailto:cskh@babywale.vn" className="font-bold text-foreground hover:underline">
-                    cskh@babywale.vn
+                  <a href={`mailto:${env.NEXT_PUBLIC_STORE_EMAIL}`} className="font-bold text-foreground hover:underline">
+                    {env.NEXT_PUBLIC_STORE_EMAIL}
                   </a>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Phản hồi trong vòng 2 giờ</p>
                 </div>

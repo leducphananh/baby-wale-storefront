@@ -18,6 +18,12 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+  
+  // Store contact info
+  NEXT_PUBLIC_STORE_HOTLINE: z.string().default("1900 8899"),
+  NEXT_PUBLIC_STORE_EMAIL: z.string().default("cskh@babywale.vn"),
+  NEXT_PUBLIC_STORE_HOURS: z.string().default("8:00 - 21:30 hàng ngày"),
+  NEXT_PUBLIC_STORE_ADDRESS: z.string().default("120 Hai Bà Trưng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh"),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -29,6 +35,10 @@ export function parsePublicEnv(
     NEXT_PUBLIC_SUPABASE_URL: source.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: source.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: source.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_STORE_HOTLINE: source.NEXT_PUBLIC_STORE_HOTLINE,
+    NEXT_PUBLIC_STORE_EMAIL: source.NEXT_PUBLIC_STORE_EMAIL,
+    NEXT_PUBLIC_STORE_HOURS: source.NEXT_PUBLIC_STORE_HOURS,
+    NEXT_PUBLIC_STORE_ADDRESS: source.NEXT_PUBLIC_STORE_ADDRESS,
   });
 
   if (!result.success) {
@@ -50,4 +60,8 @@ export const env = parsePublicEnv({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_STORE_HOTLINE: process.env.NEXT_PUBLIC_STORE_HOTLINE,
+  NEXT_PUBLIC_STORE_EMAIL: process.env.NEXT_PUBLIC_STORE_EMAIL,
+  NEXT_PUBLIC_STORE_HOURS: process.env.NEXT_PUBLIC_STORE_HOURS,
+  NEXT_PUBLIC_STORE_ADDRESS: process.env.NEXT_PUBLIC_STORE_ADDRESS,
 });

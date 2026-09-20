@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
+import { env } from "@/lib/env";
 
 export async function SiteFooter() {
   const categories = await listStorefrontCategories();
@@ -91,20 +92,20 @@ export async function SiteFooter() {
             <div className="space-y-2 text-xs text-foreground/80">
               <p className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-accent shrink-0" />
-                <span>120 Hai Bà Trưng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</span>
+                <span>{env.NEXT_PUBLIC_STORE_ADDRESS}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-secondary shrink-0" />
-                <span className="font-bold text-primary">1900 8899</span>
+                <span className="font-bold text-primary">{env.NEXT_PUBLIC_STORE_HOTLINE}</span>
                 <span className="text-muted-foreground">(Cước gọi 1.000đ/phút)</span>
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-accent shrink-0" />
-                <span>cskh@babywale.vn</span>
+                <span>{env.NEXT_PUBLIC_STORE_EMAIL}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                <span>8:00 - 21:30 hàng ngày (kể cả Thứ Bảy, CN)</span>
+                <span>{env.NEXT_PUBLIC_STORE_HOURS}</span>
               </p>
             </div>
           </div>

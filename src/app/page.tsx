@@ -5,7 +5,7 @@ import { ArrowRight, Sparkles, ChevronRight, CheckCircle, ShieldCheck, Truck, He
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
 import { listStorefrontBestSellers } from "@/features/catalog/server/list-best-sellers";
-import { HomeTabs } from "@/components/home/home-tabs";
+import { ProductCard } from "@/components/catalog/product-card";
 
 export const revalidate = 300;
 
@@ -100,20 +100,7 @@ export default async function HomePage() {
                     referrerPolicy="no-referrer"
                   />
 
-                  {/* Floating badge 1: Top Rated */}
-                  <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl shadow-lg border border-border flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                      <Star className="w-5 h-5 fill-amber-400 stroke-amber-400" />
-                    </div>
-                    <div>
-                      <span className="block text-[11px] font-bold text-muted-foreground uppercase">
-                        Khách Hàng Đánh Giá
-                      </span>
-                      <span className="text-xs font-black text-foreground">
-                        4.9/5 ★ (15.000+ Mẹ Tin Dùng)
-                      </span>
-                    </div>
-                  </div>
+
 
                   {/* Floating badge 2: Genuine guarantee */}
                   <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl shadow-lg border border-border flex items-center gap-2.5">
@@ -219,14 +206,30 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. Product Discovery Tabs: Bestsellers / New / Featured */}
+      {/* 4. Products Discovery Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <HomeTabs
-          bestSellers={bestSellers}
-          newProducts={newProducts.items}
-          featuredProducts={bestSellers} // Fallback to bestsellers for featured
-          totalProductsCount={newProducts.totalCount}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
+          <div>
+            <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+              Khám phá sản phẩm
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mt-1">
+              Sản Phẩm Nổi Bật
+            </h2>
+          </div>
+          <Link
+            href="/san-pham"
+            className="text-xs sm:text-sm font-bold text-primary hover:text-accent flex items-center gap-1 self-start sm:self-auto group transition-colors"
+          >
+            Xem tất cả sản phẩm
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {newProducts.items.map((product) => (
+            <ProductCard key={product.productId} product={product} />
+          ))}
+        </div>
       </section>
 
       {/* 5. Shopping Benefits / Trust Section (Section 6 requirement) */}
@@ -278,63 +281,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. Parent Community Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-xl mx-auto mb-8">
-          <span className="text-xs font-bold text-secondary uppercase tracking-wider">
-            Phản hồi từ cha mẹ
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mt-1">
-            Hơn 15.000 Mẹ Bỉm Tin Tưởng
-          </h2>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              name: 'Mẹ Thu Trang (Hà Nội)',
-              baby: 'Bé Sữa (6 tháng tuổi)',
-              comment:
-                'Mình đặt bỉm Merries và bình Hegen ở Baby Wale, giao hàng hỏa tốc trong 2 tiếng rất ưng ý. Bình sữa chính hãng dùng êm, bé chịu hợp tác ngay từ lần đầu tiên!',
-              rating: 5,
-            },
-            {
-              name: 'Bố Minh Hoàng (TP.HCM)',
-              baby: 'Bé Coca (3 tháng tuổi)',
-              comment:
-                'Mua máy tiệt trùng Fatzbaby King 2 tại đây được kích hoạt bảo hành chính hãng tận nơi. Đóng gói rất cẩn thận, có kèm thư cảm ơn rất dễ thương.',
-              rating: 5,
-            },
-            {
-              name: 'Mẹ Bích Ngọc (Đà Nẵng)',
-              baby: 'Bé Cà Chua (1 tuổi)',
-              comment:
-                'Sữa Meiji chuẩn vị thanh mát, date luôn mới nhất. Đội ngũ CSKH tư vấn rất chi tiết về cách bảo quản sữa mùa hè. Sẽ ủng hộ Baby Wale lâu dài!',
-              rating: 5,
-            },
-          ].map((t, idx) => (
-            <div
-              key={idx}
-              className="bg-card p-5 rounded-2xl border border-border shadow-soft flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="flex text-amber-400">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 stroke-amber-400" />
-                  ))}
-                </div>
-                <p className="text-xs text-foreground/80 leading-relaxed italic">
-                  "{t.comment}"
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/60">
-                <h4 className="font-bold text-xs text-foreground">{t.name}</h4>
-                <p className="text-[11px] text-muted-foreground">{t.baby}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
