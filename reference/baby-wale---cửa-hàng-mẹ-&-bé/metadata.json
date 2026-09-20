@@ -1,0 +1,6 @@
+{
+  "name": "Baby Wale - Cửa hàng Mẹ & Bé",
+  "description": "Website thương mại điện tử chuyên cung cấp sản phẩm mẹ và bé chính hãng, an toàn và cao cấp từ Baby Wale.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

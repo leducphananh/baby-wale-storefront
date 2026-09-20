@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Soft Glow / Background -->
+  <circle cx="50" cy="50" r="48" fill="#FFF7F1" stroke="#FF8FA3" stroke-width="2"/>
+  
+  <!-- Whale Water Fountain Spout -->
+  <path d="M42 32 C40 20 32 16 35 12 C38 8 46 16 44 26" fill="#6FA8DC" opacity="0.85"/>
+  <path d="M44 32 C46 18 54 14 52 10 C50 6 42 15 42 26" fill="#B7D5F0" opacity="0.9"/>
+  <circle cx="34" cy="11" r="2.5" fill="#6FA8DC"/>
+  <circle cx="53" cy="9" r="2" fill="#6FA8DC"/>
+  <circle cx="44" cy="7" r="1.8" fill="#B7D5F0"/>
+
+  <!-- Whale Body -->
+  <path d="M16 56 C14 36 34 26 58 28 C74 30 84 40 84 54 C84 62 82 68 76 72 C70 76 56 78 40 76 C24 74 18 68 16 56 Z" fill="#3B82F6"/>
+  
+  <!-- Whale Belly -->
+  <path d="M18 58 C22 68 34 76 52 76 C40 70 28 64 22 56 Z" fill="#FFFFFF"/>
+  <path d="M22 60 Q 28 66 38 70" stroke="#E6EEF8" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M28 63 Q 34 68 44 72" stroke="#E6EEF8" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Whale Tail -->
+  <path d="M78 54 C82 50 88 44 92 46 C94 48 90 56 86 60 C89 64 94 70 91 72 C87 74 81 66 77 62 Z" fill="#2563EB"/>
+
+  <!-- Whale Smile & Eye -->
+  <path d="M30 46 Q 34 43 38 46" stroke="#0D2B4E" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M22 54 Q 28 60 36 56" stroke="#0D2B4E" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <ellipse cx="38" cy="53" rx="3.5" ry="2.2" fill="#FF8FA3" opacity="0.75"/>
+
+  <!-- Little Sleeping Baby resting on whale's back -->
+  <g transform="translate(48, 32)">
+    <!-- Body in pink onesie -->
+    <ellipse cx="14" cy="18" rx="8.5" ry="6" fill="#FF8FA3" transform="rotate(-15 14 18)"/>
+    <circle cx="19" cy="21" r="3.2" fill="#FF8FA3"/>
+    
+    <!-- Baby Head -->
+    <circle cx="6" cy="12" r="8" fill="#FCE7D6"/>
+    <!-- Sleeping eye -->
+    <path d="M3 13 Q 5 15 7 13" stroke="#0D2B4E" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+    <!-- Cute smile -->
+    <path d="M7 16 Q 9 17.5 11 16" stroke="#0D2B4E" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+    <!-- Rosy cheek -->
+    <circle cx="4" cy="16" r="1.8" fill="#FF8FA3" opacity="0.8"/>
+    <!-- Curl of hair -->
+    <path d="M6 4 C 8 2 10 5 8 7 C 7 8 8 10 6 10" stroke="#92400E" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    <!-- Little hand -->
+    <circle cx="10" cy="19" r="2.2" fill="#FCE7D6"/>
+  </g>
+
+  <!-- Pink floating heart -->
+  <path d="M68 20 C68 18 65 16 63 18 C61 16 58 18 58 20 C58 23 63 26 63 26 C63 26 68 23 68 20 Z" fill="#FF8FA3"/>
+
+  <!-- Water Waves at bottom -->
+  <path d="M12 78 Q 24 74 36 78 T 60 78 T 84 78 T 92 78" stroke="#6FA8DC" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M18 84 Q 30 80 42 84 T 66 84 T 88 84" stroke="#B7D5F0" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>

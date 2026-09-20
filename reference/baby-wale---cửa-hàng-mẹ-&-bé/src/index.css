@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+/*
+ * "Baby Wale" brand theme tokens for customer-facing e-commerce store
+ * Reusing all exact tokens from the Baby Wale design system:
+ * Soft Trust Commerce: Navy primary, Warm cream background (#fff7f1),
+ * Brand Pink secondary (#ff8fa3), Brand Sky Blue accent (#6fa8dc),
+ * Soft Info blue (#b7d5f0), Pastel pink (#ffe4e9), and Nunito typography.
+ */
+:root {
+  --radius: 0.875rem;
+
+  --background: #fff7f1;
+  --foreground: #0d2b4e;
+
+  --card: #ffffff;
+  --card-foreground: #0d2b4e;
+
+  --popover: #ffffff;
+  --popover-foreground: #0d2b4e;
+
+  --primary: #0d2b4e;
+  --primary-foreground: #ffffff;
+
+  /* Secondary (brand pink) uses dark navy text for accessible 6.6:1 contrast */
+  --secondary: #ff8fa3;
+  --secondary-foreground: #0d2b4e;
+
+  --muted: #f5f8fc;
+  --muted-foreground: #64748b;
+
+  /* Accent sky blue */
+  --accent: #6fa8dc;
+  --accent-foreground: #0d2b4e;
+
+  /* Soft informational blue */
+  --info: #b7d5f0;
+  --info-foreground: #0d2b4e;
+
+  /* Decorative pastel surface */
+  --pastel-pink: #ffe4e9;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+
+  --warning: #f59e0b;
+  --warning-foreground: #0d2b4e;
+
+  --border: #e6eef8;
+  --input: #e6eef8;
+  --ring: #6fa8dc;
+
+  --sidebar: #0d2b4e;
+  --sidebar-foreground: #fff7f1;
+  --sidebar-muted-foreground: #9fb8d6;
+  --sidebar-accent: #6fa8dc;
+  --sidebar-accent-foreground: #0d2b4e;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-pastel-pink: var(--pastel-pink);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --shadow-soft: 0 2px 8px rgba(13, 43, 78, 0.06);
+  --shadow-card: 0 4px 16px rgba(13, 43, 78, 0.07);
+  --shadow-hover: 0 8px 24px rgba(13, 43, 78, 0.11);
+
+  --font-sans: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: 1.25rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: rgba(111, 168, 220, 0.5);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #fff7f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d4e2f0;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a9c7e4;
+  }
+}
