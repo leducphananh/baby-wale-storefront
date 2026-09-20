@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 
-import { CategoryFilterChips } from "@/components/catalog/category-filter-chips";
-import { Pagination } from "@/components/catalog/pagination";
-import { ProductGrid } from "@/components/catalog/product-grid";
-import { Container } from "@/components/layout/container";
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
+import { ShopClientView } from "@/features/catalog/components/shop-client-view";
 
 const PAGE_SIZE = 24;
 
@@ -27,14 +24,6 @@ function buildCatalogHref(categorySlug: string | undefined, page: number, search
   return query ? `/san-pham?${query}` : "/san-pham";
 }
 
-/**
- * `/san-pham` — the main catalog listing (S0 C14 URL scheme). Category
- * filter and page live in URL search params (`?danh-muc=&trang=`), not
- * client state — shareable, back-button-correct, SSR-friendly, crawlable
- * (nextjs-app-router, storefront-performance). Uses `list_storefront_
- * products`/`list_storefront_categories` only — no direct base-table query
- * (nextjs-data-access).
- */
 export const revalidate = 300;
 
 export async function generateMetadata({ searchParams }: CatalogPageProps): Promise<Metadata> {
@@ -43,9 +32,6 @@ export async function generateMetadata({ searchParams }: CatalogPageProps): Prom
   const page = parsePage(params.trang);
 
   if (categorySlug) {
-    // This query-string form is a duplicate of the real canonical category
-    // page — point there instead of indexing a second URL for the same
-    // content (nextjs-seo: canonical discipline on filtered listings).
     return {
       title: "Tất cả sản phẩm",
       alternates: { canonical: `/danh-muc/${categorySlug}` },
@@ -78,24 +64,14 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const totalPages = Math.max(1, Math.ceil(productPage.totalCount / PAGE_SIZE));
 
   return (
-    <Container className="flex flex-col gap-6 py-8">
-      <h1 className="text-h1 text-text">
-        {params["tu-khoa"] ? `Kết quả tìm kiếm cho "${params["tu-khoa"]}"` : "Tất cả sản phẩm"}
-      </h1>
-
-      <CategoryFilterChips categories={categories} activeCategorySlug={categorySlug} />
-
-      <p className="text-body-sm text-text-muted" aria-live="polite">
-        {productPage.totalCount} sản phẩm
-      </p>
-
-      <ProductGrid products={productPage.items} />
-
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        buildHref={(targetPage) => buildCatalogHref(categorySlug, targetPage, params["tu-khoa"])}
-      />
-    </Container>
+    <ShopClientView 
+      products={productPage.items} 
+      categories={categories} 
+      activeCategorySlug={categorySlug || null} 
+      totalCount={productPage.totalCount}
+      currentPage={page}
+      totalPages={totalPages}
+      searchKeyword={params["tu-khoa"]}
+    />
   );
 }

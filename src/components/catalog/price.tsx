@@ -25,9 +25,9 @@ export interface PriceProps extends React.ComponentPropsWithoutRef<"span"> {
 }
 
 const ROLE_CLASS: Record<NonNullable<PriceProps["role"]>, string> = {
-  card: "text-price-card",
-  lg: "text-price-lg",
-  total: "text-price-total",
+  card: "font-extrabold text-sm sm:text-base text-primary",
+  lg: "text-2xl sm:text-3xl font-black text-primary",
+  total: "text-lg sm:text-xl font-bold text-primary",
 };
 
 function Price({ amount, role = "card", treatZeroAsUnavailable = true, className, ...props }: PriceProps) {

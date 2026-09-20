@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-
 import { ShoppingBag } from "lucide-react";
-
 import { useCartStore } from "@/features/cart/store";
 import type { StorefrontProduct } from "@/features/catalog/types";
 
@@ -33,13 +31,13 @@ export function AddToCartIconButton({ product }: AddToCartIconButtonProps) {
     <button
       onClick={handleAddToCart}
       disabled={!product.inStock}
-      className={`mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs font-bold transition-all duration-200 ${
+      className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 ${
         product.inStock
-          ? "bg-surface-subtle text-primary hover:bg-primary hover:text-surface active:scale-95"
-          : "cursor-not-allowed bg-surface-subtle/60 text-text-muted"
+          ? "bg-muted text-primary hover:bg-primary hover:text-primary-foreground active:scale-98"
+          : "bg-muted/60 text-muted-foreground cursor-not-allowed"
       }`}
     >
-      <ShoppingBag className="h-3.5 w-3.5" />
+      <ShoppingBag className="w-3.5 h-3.5" />
       {product.inStock ? "Thêm vào giỏ" : "Hết hàng"}
     </button>
   );

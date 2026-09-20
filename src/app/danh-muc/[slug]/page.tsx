@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { Pagination } from "@/components/catalog/pagination";
-import { ProductGrid } from "@/components/catalog/product-grid";
-import { Container } from "@/components/layout/container";
 import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 import { listStorefrontProducts } from "@/features/catalog/server/list-products";
 import { env } from "@/lib/env";
+import { ShopClientView } from "@/features/catalog/components/shop-client-view";
 
 const PAGE_SIZE = 24;
 
@@ -20,15 +18,6 @@ function parsePage(raw: string | undefined): number {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
-/**
- * `/danh-muc/[slug]` — the canonical category landing page (S0 C14). An
- * unknown slug renders `notFound()` — never a crash (§6 of this phase's
- * brief). A slug is only ever "known" if `list_storefront_categories()`
- * returned it, which already means it has >=1 active + web-visible product
- * — the "0-product category" case therefore only differs from "unknown
- * slug" if products change between the two calls, which self-heals to
- * `ProductGrid`'s own empty state on the next request, not a crash.
- */
 export const revalidate = 300;
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
@@ -87,26 +76,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   };
 
   return (
-    <Container className="flex flex-col gap-6 py-8">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <h1 className="text-h1 text-text">{category.name}</h1>
-      <p className="text-body-sm text-text-muted" aria-live="polite">
-        {productPage.totalCount} sản phẩm
-      </p>
-
-      <ProductGrid
-        products={productPage.items}
-        emptyTitle="Danh mục này hiện chưa có sản phẩm"
-        emptyDescription="Vui lòng quay lại sau hoặc xem toàn bộ sản phẩm."
-      />
-
-      <Pagination
+      <ShopClientView 
+        products={productPage.items} 
+        categories={categories} 
+        activeCategorySlug={slug} 
+        totalCount={productPage.totalCount}
         currentPage={page}
         totalPages={totalPages}
-        buildHref={(targetPage) =>
-          targetPage > 1 ? `/danh-muc/${slug}?trang=${targetPage}` : `/danh-muc/${slug}`
-        }
       />
-    </Container>
+    </>
   );
 }

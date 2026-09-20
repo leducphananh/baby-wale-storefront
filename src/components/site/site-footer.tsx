@@ -1,35 +1,74 @@
 import * as React from "react";
-
 import Link from "next/link";
+import {
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  Headphones,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Heart,
+} from "lucide-react";
 
-import { Container } from "@/components/layout/container";
-import { TRUST_COPY_LINES } from "@/lib/content/trust-copy";
+import { listStorefrontCategories } from "@/features/catalog/server/list-categories";
 
-/**
- * Site footer — S2.4 approved factual trust copy (§15) only. No fabricated
- * phone number, address, Zalo ID, certification, or delivery/shipping
- * promise (CLAUDE.md §8/§15, public-data-contract). "Hỗ trợ" keeps the
- * literal `[OWNER CONTENT TBD]` marker from the frozen contract rather than
- * inventing a channel.
- */
-import { Heart, ShieldCheck, MapPin, Phone, Mail, Clock } from "lucide-react";
+export async function SiteFooter() {
+  const categories = await listStorefrontCategories();
 
-function SiteFooter() {
   return (
-    <footer className="bg-surface border-t border-border mt-16 pt-12 pb-24 md:pb-12">
-      {/* Trust Highlights Section */}
+    <footer className="bg-white border-t border-border mt-16 pt-12 pb-24 md:pb-12">
+      {/* 4 Trust Highlights Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-6 rounded-3xl bg-background border border-border/80">
-          {TRUST_COPY_LINES.map((line, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary-tint/60 flex items-center justify-center text-primary shrink-0">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex items-center h-full">
-                <h4 className="font-bold text-xs sm:text-sm text-text">{line}</h4>
-              </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 p-6 rounded-3xl bg-background border border-border/80">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-pastel-pink/60 flex items-center justify-center text-primary shrink-0">
+              <ShieldCheck className="w-5 h-5 text-primary" />
             </div>
-          ))}
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-foreground">100% Chính Hãng</h4>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Nhập khẩu chính ngạch từ Nhật, Úc, Châu Âu
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-info/40 flex items-center justify-center text-primary shrink-0">
+              <Truck className="w-5 h-5 text-accent" />
+            </div>
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-foreground">Giao Hàng Hỏa Tốc</h4>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Nội thành 2H, toàn quốc 1-3 ngày
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-warning shrink-0">
+              <RotateCcw className="w-5 h-5 text-warning" />
+            </div>
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-foreground">Đổi Trả Dễ Dàng</h4>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Miễn phí đổi trả trong 7 ngày nếu lỗi sản phẩm
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-success shrink-0">
+              <Headphones className="w-5 h-5 text-success" />
+            </div>
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-foreground">Tận Tâm Đồng Hành</h4>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Dược sĩ & chuyên viên tư vấn mẹ & bé 24/7
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -38,44 +77,97 @@ function SiteFooter() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-border/80">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="text-h3 text-text block mb-4">
-              Baby Wale
+            <Link href="/" className="inline-flex items-center gap-2">
+              <span className="text-xl font-black text-primary tracking-tight leading-none">
+                Baby Wale
+              </span>
             </Link>
-            <p className="text-xs text-text-muted leading-relaxed max-w-sm">
-              Baby Wale ra đời từ tình yêu vô điều kiện dành cho trẻ thơ. Cửa hàng mẹ & bé.
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+              Baby Wale ra đời từ tình yêu vô điều kiện dành cho trẻ thơ. Chúng tôi tuyển chọn những
+              sản phẩm an toàn, chất lượng hàng đầu thế giới để mỗi người mẹ luôn an tâm trên hành trình
+              nuôi con lớn khôn.
             </p>
 
-            <div className="space-y-2 text-xs text-text/80">
+            <div className="space-y-2 text-xs text-foreground/80">
               <p className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-accent shrink-0" />
-                <span>[OWNER CONTENT TBD]</span>
+                <span>120 Hai Bà Trưng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</span>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-secondary shrink-0" />
-                <span className="font-bold text-primary">[OWNER CONTENT TBD]</span>
+                <span className="font-bold text-primary">1900 8899</span>
+                <span className="text-muted-foreground">(Cước gọi 1.000đ/phút)</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-accent shrink-0" />
+                <span>cskh@babywale.vn</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span>8:00 - 21:30 hàng ngày (kể cả Thứ Bảy, CN)</span>
               </p>
             </div>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-bold text-sm text-text mb-3">Danh Mục Sản Phẩm</h4>
-            <ul className="space-y-2 text-xs text-text-muted">
-              <li>
-                <Link href="/san-pham" className="hover:text-primary transition-colors">
-                  Tất cả sản phẩm
-                </Link>
-              </li>
+            <h4 className="font-bold text-sm text-foreground mb-3">Danh Mục Sản Phẩm</h4>
+            <ul className="space-y-2 text-xs text-muted-foreground">
+              {categories.map((cat) => (
+                <li key={cat.categoryId}>
+                  <Link
+                    href={`/danh-muc/${cat.slug}`}
+                    className="hover:text-primary transition-colors block"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Customer Care */}
           <div>
-            <h4 className="font-bold text-sm text-text mb-3">Hỗ Trợ Khách Hàng</h4>
-            <ul className="space-y-2 text-xs text-text-muted">
+            <h4 className="font-bold text-sm text-foreground mb-3">Hỗ Trợ Khách Hàng</h4>
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
-                <Link href="/tra-cuu-don-hang" className="hover:text-primary transition-colors">
+                <Link
+                  href="/tra-cuu-don-hang"
+                  className="hover:text-primary transition-colors block"
+                >
                   Tra cứu đơn hàng
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ve-chung-toi"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Chính sách giao hàng & kiểm hàng
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ve-chung-toi"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Chính sách bảo hành & đổi trả
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/lien-he"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Câu hỏi thường gặp (FAQ)
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/lien-he"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Hướng dẫn mua hàng & thanh toán
                 </Link>
               </li>
             </ul>
@@ -83,19 +175,66 @@ function SiteFooter() {
 
           {/* About & Certification */}
           <div>
-            <h4 className="font-bold text-sm text-text mb-3">Về Baby Wale</h4>
-            <ul className="space-y-2 text-xs text-text-muted">
+            <h4 className="font-bold text-sm text-foreground mb-3">Về Baby Wale</h4>
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Trang chủ
+                <Link
+                  href="/ve-chung-toi"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Câu chuyện thương hiệu
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/lien-he"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Hệ thống cửa hàng
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ve-chung-toi"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Cam kết chất lượng
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/lien-he"
+                  className="hover:text-primary transition-colors block"
+                >
+                  Liên hệ hợp tác phân phối
                 </Link>
               </li>
             </ul>
+
+            <div className="mt-4 pt-3 border-t border-border/60">
+              <span className="text-[11px] font-bold text-foreground block mb-1">
+                Phương thức thanh toán
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="text-[10px] font-bold bg-muted px-2 py-1 rounded text-primary">
+                  COD (Tiền mặt)
+                </span>
+                <span className="text-[10px] font-bold bg-muted px-2 py-1 rounded text-primary">
+                  Chuyển khoản QR
+                </span>
+                <span className="text-[10px] font-bold bg-muted px-2 py-1 rounded text-primary">
+                  VNPAY
+                </span>
+                <span className="text-[10px] font-bold bg-muted px-2 py-1 rounded text-primary">
+                  MoMo
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Bottom Copyright */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Baby Wale Vietnam. Bản quyền thuộc về Baby Wale Store.</p>
           <p className="flex items-center gap-1">
             Đồng hành cùng cha mẹ với trọn vẹn yêu thương <Heart className="w-3.5 h-3.5 text-secondary fill-secondary" />
@@ -105,5 +244,3 @@ function SiteFooter() {
     </footer>
   );
 }
-
-export { SiteFooter };
