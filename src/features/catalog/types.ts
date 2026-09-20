@@ -45,6 +45,7 @@ export interface StorefrontProduct {
    */
   inStock: boolean;
   updatedAt: string;
+  imageStoragePath?: string | null;
 }
 
 export interface StorefrontProductListItem extends StorefrontProduct {
@@ -56,6 +57,7 @@ export interface ListStorefrontProductsParams {
   categorySlug?: string;
   limit?: number;
   offset?: number;
+  search?: string;
 }
 
 export interface StorefrontProductPage {

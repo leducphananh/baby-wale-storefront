@@ -10,7 +10,7 @@ import { listStorefrontProducts } from "@/features/catalog/server/list-products"
 const PAGE_SIZE = 24;
 
 interface CatalogPageProps {
-  searchParams: Promise<{ "danh-muc"?: string; trang?: string }>;
+  searchParams: Promise<{ "danh-muc"?: string; trang?: string; "tu-khoa"?: string }>;
 }
 
 function parsePage(raw: string | undefined): number {
@@ -18,9 +18,10 @@ function parsePage(raw: string | undefined): number {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
-function buildCatalogHref(categorySlug: string | undefined, page: number): string {
+function buildCatalogHref(categorySlug: string | undefined, page: number, searchKeyword?: string): string {
   const qs = new URLSearchParams();
   if (categorySlug) qs.set("danh-muc", categorySlug);
+  if (searchKeyword) qs.set("tu-khoa", searchKeyword);
   if (page > 1) qs.set("trang", String(page));
   const query = qs.toString();
   return query ? `/san-pham?${query}` : "/san-pham";
@@ -55,7 +56,7 @@ export async function generateMetadata({ searchParams }: CatalogPageProps): Prom
   return {
     title: "Tất cả sản phẩm",
     description: "Toàn bộ sản phẩm Baby Wale — bỉm, sữa và đồ dùng cho bé.",
-    alternates: { canonical: page > 1 ? `/san-pham?trang=${page}` : "/san-pham" },
+    alternates: { canonical: buildCatalogHref(undefined, page, params["tu-khoa"]) },
   };
 }
 
@@ -68,6 +69,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     listStorefrontCategories(),
     listStorefrontProducts({
       categorySlug,
+      search: params["tu-khoa"],
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
@@ -77,7 +79,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   return (
     <Container className="flex flex-col gap-6 py-8">
-      <h1 className="text-h1 text-text">Tất cả sản phẩm</h1>
+      <h1 className="text-h1 text-text">
+        {params["tu-khoa"] ? `Kết quả tìm kiếm cho "${params["tu-khoa"]}"` : "Tất cả sản phẩm"}
+      </h1>
 
       <CategoryFilterChips categories={categories} activeCategorySlug={categorySlug} />
 
@@ -90,7 +94,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       <Pagination
         currentPage={page}
         totalPages={totalPages}
-        buildHref={(targetPage) => buildCatalogHref(categorySlug, targetPage)}
+        buildHref={(targetPage) => buildCatalogHref(categorySlug, targetPage, params["tu-khoa"])}
       />
     </Container>
   );

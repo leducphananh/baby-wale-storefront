@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { CategoryTile } from "@/components/catalog/category-tile";
@@ -40,16 +41,28 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-12 pb-16 lg:gap-16">
       {/* Hero */}
-      <section className="bg-surface-subtle">
-        <Container className="flex flex-col items-start gap-4 py-12 lg:py-20">
-          <h1 className="text-display text-text">Baby Wale — mẹ &amp; bé, mua sắm an tâm</h1>
-          <p className="text-body max-w-lg text-text-muted">
-            Bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng — nhân viên Baby Wale xác nhận
-            từng đơn trước khi xử lý.
-          </p>
-          <Button asChild size="lg">
-            <Link href="/san-pham">Mua sắm ngay</Link>
-          </Button>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/hero_background.jpg"
+            alt="Baby Wale Hero"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/10 lg:bg-transparent" />
+        </div>
+        <Container className="relative flex flex-col items-start gap-4 py-16 lg:py-32">
+          <div className="max-w-2xl rounded-xl bg-surface/80 p-8 backdrop-blur-md lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+            <h1 className="text-display text-text drop-shadow-sm">Baby Wale — mẹ &amp; bé, mua sắm an tâm</h1>
+            <p className="mt-4 max-w-lg text-body text-text-muted drop-shadow-sm">
+              Bỉm, sữa và đồ dùng cho bé. Đặt hàng dễ dàng — nhân viên Baby Wale xác nhận
+              từng đơn trước khi xử lý.
+            </p>
+            <Button asChild size="lg" className="mt-8 shadow-md hover:shadow-lg">
+              <Link href="/san-pham">Mua sắm ngay</Link>
+            </Button>
+          </div>
         </Container>
       </section>
 

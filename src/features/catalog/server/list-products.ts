@@ -24,6 +24,7 @@ export async function listStorefrontProducts(
     p_category_slug: params.categorySlug ?? undefined,
     p_limit: params.limit ?? DEFAULT_PAGE_SIZE,
     p_offset: params.offset ?? 0,
+    p_search: params.search ?? undefined,
   });
 
   if (error) {
@@ -46,6 +47,7 @@ export async function listStorefrontProducts(
     sellingPrice: row.selling_price,
     inStock: row.in_stock,
     updatedAt: row.updated_at,
+    imageStoragePath: row.image_storage_path,
     totalCount: row.total_count,
   }));
 

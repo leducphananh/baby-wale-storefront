@@ -38,7 +38,7 @@ conflict, resolve per §3.
 
 ---
 
-## 2. Current phase — S8 complete (Order Success & Order Tracking); next is Admin Coordination (NOT started — see §11's roadmap note on renumbering)
+## 2. Current phase — S12 complete (Best Sellers, Checkout Rate Limiting, SEO); next is S13 (Product Images), S14 (Search) and S15 (UI Overhaul)
 
 - **S0** — Requirements & Architecture — done (`docs/S0-requirements-and-architecture.md`).
 - **S0.5** — Claude Code foundation & storefront skills — done (`CLAUDE.md`, `.claude/skills/*`).
@@ -278,10 +278,10 @@ conflict, resolve per §3.
   entropy — 192 bits — makes brute-forcing impractical today); the S7 idempotent-
   replay token-loss and normal-header-instead-of-slim-header limitations are
   unchanged (S8 did not touch either, per its own explicit instructions not to).
-- **Next: Admin Coordination** (mirroring the S3 and S7 migrations into
-  `baby-store-web/supabase/migrations/`, still not done in either phase) or **Online
-  Payment**, whichever the user prioritizes. **Not started.** Do not begin further
-  work until asked.
+- **S10** — VNPay Payment Integration — **done**: Added VNPay integration, cart item selection.
+- **S11** — Customer Authentication & Account Views — **done**: Login, registration, and account pages using Supabase Auth. Added `s11_admin_rbac.sql` and `s11_customer_rpcs.sql`.
+- **S12** — Best Sellers, Checkout Rate Limiting, SEO — **done**: Added SEO structured data, OpenGraph metadata, a Best Sellers section with `s12_best_sellers.sql` migration, and rate limiting for checkout.
+- **Next: Admin Coordination** (mirroring S12 migrations into `baby-store-web/supabase/migrations/`), followed by **S13** (Product Images), **S14** (Search), and **S15** (UI Overhaul).
 
 **The DESIGN APPROVED gate is now CLOSED — the design is a visual contract.**
 Implementation must not casually change: primary colour, accent use, type scale, radius

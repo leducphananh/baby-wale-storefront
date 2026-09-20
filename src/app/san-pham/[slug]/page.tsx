@@ -138,7 +138,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           {/* No product image field exists yet — S3/S4 finding, no public
               image bucket (O3/F13). Every product shows the neutral
               placeholder frame until that ships. */}
-          <ProductGallery images={[]} productName={product.name} />
+          <ProductGallery 
+            images={product.imageStoragePath ? [`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}`] : []} 
+            productName={product.name} 
+          />
         </div>
 
         <div className="flex flex-col gap-4 lg:w-1/2">
@@ -161,6 +164,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             unit={product.unit}
             sellingPrice={product.sellingPrice}
             inStock={product.inStock}
+            imageUrl={product.imageStoragePath ? `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}` : null}
           />
 
           <div className="flex flex-col gap-1.5 rounded-md border border-border bg-surface-subtle p-4">

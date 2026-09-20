@@ -62,13 +62,15 @@ async function SiteHeader() {
   );
 
   const search = (
-    <Input
-      type="search"
-      disabled
-      placeholder="Tìm kiếm sản phẩm (sắp ra mắt)"
-      aria-label="Tìm kiếm sản phẩm (sắp ra mắt)"
-      className="w-full"
-    />
+    <form action="/san-pham" className="w-full">
+      <Input
+        type="search"
+        name="tu-khoa"
+        placeholder="Tìm kiếm sản phẩm theo tên, thương hiệu..."
+        aria-label="Tìm kiếm sản phẩm"
+        className="w-full"
+      />
+    </form>
   );
 
   const nav = (

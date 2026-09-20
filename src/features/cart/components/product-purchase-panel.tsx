@@ -34,6 +34,7 @@ export interface ProductPurchasePanelProps {
   unit: string;
   sellingPrice: number;
   inStock: boolean;
+  imageUrl?: string | null;
 }
 
 function ProductPurchasePanel({
@@ -43,6 +44,7 @@ function ProductPurchasePanel({
   unit,
   sellingPrice,
   inStock,
+  imageUrl = null,
 }: ProductPurchasePanelProps) {
   const [quantity, setQuantity] = React.useState(1);
   const [justAdded, setJustAdded] = React.useState(false);
@@ -67,7 +69,7 @@ function ProductPurchasePanel({
       productId,
       slug,
       name,
-      imageUrl: null,
+      imageUrl,
       unit,
       cachedUnitPrice: sellingPrice,
       quantity,

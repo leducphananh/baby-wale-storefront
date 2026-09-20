@@ -29,16 +29,20 @@ export interface ProductCardProps {
 }
 
 function ProductCard({ product, priority, className }: ProductCardProps) {
+  const imageUrl = product.imageStoragePath
+    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storefront-images/${product.imageStoragePath}`
+    : null;
+
   return (
     <Link
       href={`/san-pham/${product.slug}`}
       className={cn(
-        "group flex w-full flex-col rounded-sm bg-surface",
+        "group flex w-full flex-col rounded-sm bg-surface transition-all duration-300 hover:shadow-overlay hover:-translate-y-1",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         className,
       )}
     >
-      <ProductImage imageUrl={null} name={product.name} priority={priority} />
+      <ProductImage imageUrl={imageUrl} name={product.name} priority={priority} />
 
       <div className="flex flex-1 flex-col gap-1 pt-3">
         {product.brand ? (

@@ -32,7 +32,7 @@ export interface HeaderProps {
 
 function Header({ logo, search, cartHref, cartCount, menuTrigger, nav, trackOrder, account }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-md shadow-sm transition-all">
       {/* Mobile (< lg): 56px top row + 48px search row = 104px */}
       <div className="lg:hidden">
         <Container className="flex h-14 items-center justify-between gap-2">

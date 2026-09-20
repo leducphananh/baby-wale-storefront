@@ -44,5 +44,6 @@ export async function getStorefrontProductBySlug(
     sellingPrice: row.selling_price,
     inStock: row.in_stock,
     updatedAt: row.updated_at,
+    imageStoragePath: row.image_storage_path,
   };
 }
