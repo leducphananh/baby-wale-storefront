@@ -1349,6 +1349,7 @@ export type Database = {
           category_slug: string
           description: string
           distributor: string
+          image_storage_path: string | null
           in_stock: boolean
           manufacturer: string
           name: string
@@ -1379,6 +1380,7 @@ export type Database = {
           category_slug: string
           description: string
           distributor: string
+          image_storage_path: string | null
           in_stock: boolean
           manufacturer: string
           name: string
